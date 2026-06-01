@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { Playfair_Display, Manrope, Inter } from 'next/font/google'
+import { Toaster } from 'sonner'
 import './globals.css'
 
 /**
@@ -43,7 +44,10 @@ export default function RootLayout({
       lang="ru"
       className={`${playfair.variable} ${manrope.variable} ${inter.variable}`}
     >
-      <body className="font-sans antialiased">{children}</body>
+      <body className="font-sans antialiased">
+        {children}
+        <Toaster position="bottom-right" richColors closeButton />
+      </body>
     </html>
   )
 }
