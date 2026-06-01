@@ -87,7 +87,7 @@ export function RegisterForm() {
   }
 
   async function verify() {
-    if (code.length !== 6) return
+    if (code.length !== AUTH.otpLength) return
     setVerifying(true)
     setCodeError('')
     const { error } = await supabase.auth.verifyOtp({
@@ -130,10 +130,11 @@ export function RegisterForm() {
         </div>
         <h2>Подтвердите email</h2>
         <p>
-          Мы отправили 6-значный код на <b>{email}</b>. Если запрашивали код
-          несколько раз — введите код из <b>самого свежего</b> письма.
+          Мы отправили {AUTH.otpLength}-значный код на <b>{email}</b>. Если
+          запрашивали код несколько раз — введите код из <b>самого свежего</b>{' '}
+          письма.
         </p>
-        <OtpInput value={code} onChange={setCode} disabled={verifying} />
+        <OtpInput value={code} onChange={setCode} disabled={verifying} length={AUTH.otpLength} />
         {codeError && (
           <div className="err-msg" style={{ textAlign: 'center', marginTop: 10 }}>
             {codeError}
@@ -144,7 +145,7 @@ export function RegisterForm() {
           size="lg"
           className="mt-5 w-full"
           onClick={verify}
-          disabled={code.length !== 6 || verifying}
+          disabled={code.length !== AUTH.otpLength || verifying}
         >
           {verifying ? 'Проверяем…' : 'Подтвердить'}
         </Button>

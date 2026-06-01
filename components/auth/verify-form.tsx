@@ -25,7 +25,7 @@ export function VerifyForm({ email }: { email: string }) {
   }, [cooldown])
 
   async function verify() {
-    if (code.length !== 6 || !email) return
+    if (code.length !== AUTH.otpLength || !email) return
     setVerifying(true)
     setError('')
     const { error } = await supabase.auth.verifyOtp({
@@ -35,7 +35,8 @@ export function VerifyForm({ email }: { email: string }) {
     })
     setVerifying(false)
     if (error) {
-      setError('Неверный или просроченный код')
+      setError('Код неверный или устарел. Запросите новый и введите код из самого свежего письма.')
+      setCode('')
       return
     }
     toast.success('Email подтверждён')
@@ -46,7 +47,9 @@ export function VerifyForm({ email }: { email: string }) {
   async function resend() {
     if (!email) return
     await supabase.auth.resend({ type: 'signup', email })
-    toast.info('Код отправлен повторно')
+    setCode('')
+    setError('')
+    toast.info('Новый код отправлен — введите код из последнего письма')
     setCooldown(AUTH.resendCodeCooldownSeconds)
   }
 
@@ -59,13 +62,13 @@ export function VerifyForm({ email }: { email: string }) {
       <p>
         {email ? (
           <>
-            Введите 6-значный код, отправленный на <b>{email}</b>.
+            Введите {AUTH.otpLength}-значный код, отправленный на <b>{email}</b>.
           </>
         ) : (
-          'Введите 6-значный код из письма.'
+          `Введите ${AUTH.otpLength}-значный код из письма.`
         )}
       </p>
-      <OtpInput value={code} onChange={setCode} disabled={verifying} />
+      <OtpInput value={code} onChange={setCode} disabled={verifying} length={AUTH.otpLength} />
       {error && (
         <div className="err-msg" style={{ textAlign: 'center', marginTop: 10 }}>
           {error}
@@ -76,7 +79,7 @@ export function VerifyForm({ email }: { email: string }) {
         size="lg"
         className="mt-5 w-full"
         onClick={verify}
-        disabled={code.length !== 6 || verifying}
+        disabled={code.length !== AUTH.otpLength || verifying}
       >
         {verifying ? 'Проверяем…' : 'Подтвердить'}
       </Button>

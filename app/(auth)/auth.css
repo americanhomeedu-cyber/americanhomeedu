@@ -415,12 +415,14 @@
 /* 6-digit OTP input */
 .otp {
   display: flex;
-  gap: 10px;
+  gap: 8px;
   justify-content: center;
   margin: 6px 0 4px;
 }
 .otp input {
-  width: 48px;
+  flex: 1 1 0;
+  min-width: 0;
+  max-width: 50px;
   height: 56px;
   text-align: center;
   font-family: var(--font-serif);

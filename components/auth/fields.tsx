@@ -141,18 +141,20 @@ export function OtpInput({
   value,
   onChange,
   disabled,
+  length = 6,
 }: {
   value: string
   onChange: (v: string) => void
   disabled?: boolean
+  length?: number
 }) {
   const refs = React.useRef<Array<HTMLInputElement | null>>([])
-  const chars = Array.from({ length: 6 }, (_, i) => value[i] ?? '')
+  const chars = Array.from({ length }, (_, i) => value[i] ?? '')
 
   function setAt(i: number, ch: string) {
     const next = chars.slice()
     next[i] = ch
-    onChange(next.join('').slice(0, 6))
+    onChange(next.join('').slice(0, length))
   }
 
   return (
@@ -171,7 +173,7 @@ export function OtpInput({
           onChange={(e) => {
             const d = e.target.value.replace(/\D/g, '').slice(-1)
             setAt(i, d)
-            if (d && i < 5) refs.current[i + 1]?.focus()
+            if (d && i < length - 1) refs.current[i + 1]?.focus()
           }}
           onKeyDown={(e) => {
             if (e.key === 'Backspace' && !chars[i] && i > 0)
@@ -182,10 +184,10 @@ export function OtpInput({
             const p = e.clipboardData
               .getData('text')
               .replace(/\D/g, '')
-              .slice(0, 6)
+              .slice(0, length)
             if (p) {
               onChange(p)
-              refs.current[Math.min(p.length, 5)]?.focus()
+              refs.current[Math.min(p.length, length - 1)]?.focus()
             }
           }}
         />

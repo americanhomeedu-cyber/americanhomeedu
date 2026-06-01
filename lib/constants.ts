@@ -27,6 +27,9 @@ export const AUTH = {
   resendCodeCooldownSeconds: 60,
   loginMaxAttempts: 5,
   loginWindowMinutes: 15,
+  // Length of the email confirmation code. Must match the OTP length Supabase
+  // sends (Authentication → Providers → Email → Email OTP Length).
+  otpLength: 8,
 } as const
 
 export const siteUrl = () =>
