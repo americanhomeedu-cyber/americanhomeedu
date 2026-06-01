@@ -97,7 +97,10 @@ export function RegisterForm() {
     })
     setVerifying(false)
     if (error) {
-      setCodeError('Неверный или просроченный код')
+      setCodeError(
+        'Код неверный или устарел. Нажмите «Отправить повторно» и введите код из самого свежего письма.',
+      )
+      setCode('')
       return
     }
     toast.success('Email подтверждён')
@@ -111,7 +114,11 @@ export function RegisterForm() {
       toast.error(error.message)
       return
     }
-    toast.info('Код отправлен повторно')
+    // A new code invalidates all previous ones — clear the field so the user
+    // doesn't accidentally submit a stale code from an older email.
+    setCode('')
+    setCodeError('')
+    toast.info('Новый код отправлен — введите код из последнего письма')
     setCooldown(AUTH.resendCodeCooldownSeconds)
   }
 
@@ -123,7 +130,8 @@ export function RegisterForm() {
         </div>
         <h2>Подтвердите email</h2>
         <p>
-          Мы отправили 6-значный код на <b>{email}</b>. Введите его ниже.
+          Мы отправили 6-значный код на <b>{email}</b>. Если запрашивали код
+          несколько раз — введите код из <b>самого свежего</b> письма.
         </p>
         <OtpInput value={code} onChange={setCode} disabled={verifying} />
         {codeError && (
