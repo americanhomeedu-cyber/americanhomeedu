@@ -59,6 +59,12 @@ export function LoginForm({ redirect }: { redirect?: string }) {
       setServerError('Неверный email или пароль')
       return
     }
+    // Stamp last login (fire-and-forget; powers the «Активность» column).
+    void supabase
+      .from('profiles')
+      .update({ last_login_at: new Date().toISOString() })
+      .eq('id', signIn.user.id)
+
     // An explicit redirect (e.g. user was bounced from a protected page) wins.
     // Otherwise route by role: admins land in the panel, students in dashboard.
     let target = redirect

@@ -3,6 +3,7 @@
 import * as React from 'react'
 import Link from 'next/link'
 import { nanoid } from 'nanoid'
+import { toast } from 'sonner'
 import DOMPurify from 'isomorphic-dompurify'
 import {
   DndContext,
@@ -265,7 +266,9 @@ function PreviewBlock({ block }: { block: Block }) {
     case 'text':
       return <div style={{ marginBottom: 12, lineHeight: 1.6, color: 'var(--ink-2)' }} dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(block.html) }} />
     case 'list': {
-      const items = block.items.map((it, i) => <li key={i}>{it}</li>)
+      const items = block.items
+        .filter((it) => it.trim())
+        .map((it, i) => <li key={i}>{it}</li>)
       return block.ordered ? (
         <ol style={{ paddingLeft: 20, lineHeight: 1.8, color: 'var(--ink-2)' }}>{items}</ol>
       ) : (
@@ -337,24 +340,32 @@ export function CourseEditor({
     dirty.current.clear()
     if (!ids.length) return
     setSaveState('saving')
-    await Promise.all(
-      ids.map((id) => {
-        const s = sectionsRef.current.find((x) => x.id === id)
-        if (!s) return Promise.resolve()
-        return fetch(`/api/admin/sections/${id}`, {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            title: s.title,
-            description: s.description,
-            blocks: s.blocks,
-            is_published: s.is_published,
-            estimated_minutes: s.estimated_minutes,
-          }),
-        })
-      }),
-    )
-    setSaveState('saved')
+    try {
+      await Promise.all(
+        ids.map(async (id) => {
+          const s = sectionsRef.current.find((x) => x.id === id)
+          if (!s) return
+          const r = await fetch(`/api/admin/sections/${id}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              title: s.title,
+              description: s.description,
+              blocks: s.blocks,
+              is_published: s.is_published,
+              estimated_minutes: s.estimated_minutes,
+            }),
+          })
+          if (!r.ok) throw new Error('save failed')
+        }),
+      )
+      // A new edit may have landed mid-flight — only claim "saved" if clean.
+      setSaveState(dirty.current.size ? 'unsaved' : 'saved')
+    } catch {
+      ids.forEach((id) => dirty.current.add(id))
+      setSaveState('unsaved')
+      toast.error('Не удалось сохранить изменения — повторите (Cmd/Ctrl+S)')
+    }
   }, [])
 
   const scheduleSave = React.useCallback(
@@ -405,13 +416,16 @@ export function CourseEditor({
     })
     const data = await res.json()
     if (res.ok) {
+      // Fresh block ids so the copy never shares ids with the original.
+      const clonedBlocks = sec.blocks.map((b) => ({ ...b, id: nanoid() }))
       await fetch(`/api/admin/sections/${data.id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ blocks: sec.blocks, is_published: false, description: sec.description }),
+        body: JSON.stringify({ blocks: clonedBlocks, is_published: false, description: sec.description }),
       })
-      const sectionCopy: Section = { ...data, blocks: sec.blocks, description: sec.description, is_published: false }
+      const sectionCopy: Section = { ...data, blocks: clonedBlocks, description: sec.description, is_published: false }
       setSections((p) => [...p, sectionCopy])
+      toast.success('Секция дублирована')
     }
   }
 

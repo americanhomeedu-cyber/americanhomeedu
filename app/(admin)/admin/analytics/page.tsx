@@ -7,6 +7,7 @@ export const metadata: Metadata = { title: 'Аналитика — Админк�
 const DAY = 86_400_000
 
 function periodDays(p: string): number | null {
+  if (p === 'today') return 1
   if (p === '7') return 7
   if (p === '90') return 90
   if (p === 'all') return null

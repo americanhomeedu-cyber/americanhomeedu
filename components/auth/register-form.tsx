@@ -7,6 +7,7 @@ import { AlertCircle, Mail, Phone, User } from 'lucide-react'
 import { toast } from 'sonner'
 import { registerSchema } from '@/lib/validations/auth'
 import { createClient } from '@/lib/supabase/client'
+import { track } from '@/lib/analytics/track'
 import { Button } from '@/components/ui/button'
 import { AUTH } from '@/lib/constants'
 import { AuthField, PasswordField, OtpInput } from './fields'
@@ -61,6 +62,7 @@ export function RegisterForm() {
     }
 
     setSubmitting(true)
+    track('register_start')
     const { data: res, error } = await supabase.auth.signUp({
       email: parsed.data.email,
       password: parsed.data.password,
@@ -74,6 +76,7 @@ export function RegisterForm() {
       return
     }
     setEmail(parsed.data.email)
+    track('register_success')
     // Confirm email OFF -> session exists -> straight to dashboard.
     if (res.session) {
       router.push('/dashboard')

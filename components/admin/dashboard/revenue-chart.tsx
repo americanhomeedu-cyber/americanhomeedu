@@ -24,7 +24,7 @@ export function RevenueChart({ data }: { data: { date: string; value: number }[]
           <CartesianGrid stroke="#F0ECE3" vertical={false} />
           <XAxis
             dataKey="date"
-            tickFormatter={(d: string) => d.slice(5)}
+            tickFormatter={(d: string) => (d.includes('-') ? d.slice(5) : d)}
             tick={{ fontSize: 11, fill: '#9CA3AF' }}
             axisLine={false}
             tickLine={false}

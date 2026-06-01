@@ -1,6 +1,7 @@
 import { z } from 'zod'
 import { requireAdmin } from '@/lib/auth/require-admin'
 import { getResend } from '@/lib/resend/client'
+import { getSiteSettings } from '@/lib/settings'
 
 const Schema = z.object({ to: z.string().email().optional() })
 
@@ -17,9 +18,10 @@ export async function POST(req: Request) {
   }
   if (!to) return Response.json({ error: 'Не указан адрес получателя' }, { status: 400 })
 
+  const settings = await getSiteSettings()
   try {
     await getResend().emails.send({
-      from: process.env.RESEND_FROM_EMAIL || 'hello@americanhomeedu.com',
+      from: settings.email_from || process.env.RESEND_FROM_EMAIL || 'hello@americanhomeedu.com',
       to,
       subject: 'Тестовое письмо — American Home Blueprint',
       html: `<div style="font-family:Inter,Arial,sans-serif;max-width:480px;margin:0 auto;padding:28px;color:#1a1a1a">

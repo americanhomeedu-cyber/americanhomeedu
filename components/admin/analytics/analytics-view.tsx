@@ -227,7 +227,15 @@ export function AnalyticsView({
                 <h3>По utm_medium</h3>
               </div>
               <div className="card-body">
-                {mediumData.length === 0 ? <NoData /> : <DonutChart data={mediumData} centerValue="" centerLabel="" />}
+                {mediumData.length === 0 ? (
+                  <NoData />
+                ) : (
+                  <DonutChart
+                    data={mediumData}
+                    centerValue={mediums.reduce((s, x) => s + x.value, 0).toLocaleString('ru-RU')}
+                    centerLabel="событий"
+                  />
+                )}
               </div>
             </div>
           </div>

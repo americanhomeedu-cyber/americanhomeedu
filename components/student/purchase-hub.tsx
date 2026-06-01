@@ -6,6 +6,7 @@ import { toast } from 'sonner'
 import { ShieldCheck } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { formatPrice } from '@/lib/utils'
+import { track } from '@/lib/analytics/track'
 import type { Database } from '@/types/database'
 
 type Course = Database['public']['Tables']['courses']['Row']
@@ -16,6 +17,7 @@ export function PurchaseHub({ course, name }: { course: Course; name: string }) 
 
   async function buy() {
     setLoading(true)
+    track('checkout_start', { course_id: course.id })
     try {
       const res = await fetch('/api/stripe/checkout', {
         method: 'POST',

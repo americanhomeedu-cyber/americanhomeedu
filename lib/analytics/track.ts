@@ -3,6 +3,24 @@ type Trackable = Window & {
   fbq?: (...args: unknown[]) => void
 }
 
+/** Stable per-browser id so analytics can count unique visitors / sessions. */
+function getSessionId(): string {
+  try {
+    const KEY = 'ahb_sid'
+    let sid = localStorage.getItem(KEY)
+    if (!sid) {
+      sid =
+        (typeof crypto !== 'undefined' && crypto.randomUUID
+          ? crypto.randomUUID()
+          : Math.random().toString(36).slice(2) + Date.now().toString(36))
+      localStorage.setItem(KEY, sid)
+    }
+    return sid
+  } catch {
+    return 'anon'
+  }
+}
+
 /** Fire a first-party event + forward to GA4 / Meta Pixel if present. */
 export function track(
   eventType: string,
@@ -19,6 +37,7 @@ export function track(
       utm_source: params.get('utm_source'),
       utm_medium: params.get('utm_medium'),
       utm_campaign: params.get('utm_campaign'),
+      session_id: getSessionId(),
       metadata: data?.metadata ?? {},
     }
     fetch('/api/track', {

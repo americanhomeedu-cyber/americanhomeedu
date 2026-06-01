@@ -1,6 +1,7 @@
 'use client'
 
 import * as React from 'react'
+import { track } from '@/lib/analytics/track'
 
 export function BuyBar({
   priceLabel,
@@ -47,7 +48,7 @@ export function BuyBar({
           {oldPriceLabel && <span className="bb-old">{oldPriceLabel}</span>}
           <span className="bb-now">{priceLabel}</span>
         </div>
-        <a href={ctaHref} className="btn btn-gold">
+        <a href={ctaHref} className="btn btn-gold" onClick={() => track('cta_click')}>
           Получить доступ
         </a>
         <button

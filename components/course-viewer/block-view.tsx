@@ -41,7 +41,9 @@ export function BlockView({ block }: { block: Block }) {
         />
       )
     case 'list': {
-      const items = block.items.map((it, i) => <li key={i}>{it}</li>)
+      const items = block.items
+        .filter((it) => it.trim())
+        .map((it, i) => <li key={i}>{it}</li>)
       return block.ordered ? (
         <ol className="blk-read">{items}</ol>
       ) : (

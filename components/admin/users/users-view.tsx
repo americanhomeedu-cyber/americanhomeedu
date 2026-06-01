@@ -56,6 +56,14 @@ function genPassword() {
   return s + 'A7'
 }
 
+function plural(n: number, one: string, few: string, many: string) {
+  const m10 = n % 10
+  const m100 = n % 100
+  if (m10 === 1 && m100 !== 11) return one
+  if (m10 >= 2 && m10 <= 4 && (m100 < 10 || m100 >= 20)) return few
+  return many
+}
+
 export function UsersView({ users, courses }: { users: User[]; courses: Course[] }) {
   const router = useRouter()
   const [search, setSearch] = React.useState('')
@@ -170,34 +178,34 @@ export function UsersView({ users, courses }: { users: User[]; courses: Course[]
 
   async function bulkGrant(courseId: string) {
     setBusy(true)
-    try {
-      await Promise.all(
-        Array.from(selected).map((id) => api('/api/admin/enrollments', { userId: id, courseId, action: 'grant' })),
-      )
-      toast.success(`Доступ выдан: ${selected.size}`)
-      setSelected(new Set())
-      setGrantFor(null)
-      router.refresh()
-    } catch (e) {
-      toast.error((e as Error).message)
-    } finally {
-      setBusy(false)
-    }
+    const ids = Array.from(selected)
+    const results = await Promise.allSettled(
+      ids.map((id) => api('/api/admin/enrollments', { userId: id, courseId, action: 'grant' })),
+    )
+    const ok = results.filter((r) => r.status === 'fulfilled').length
+    const fail = results.length - ok
+    setBusy(false)
+    if (fail) toast.error(`Выдано: ${ok}, с ошибкой: ${fail}`)
+    else toast.success(`Доступ выдан: ${ok}`)
+    setSelected(new Set())
+    setGrantFor(null)
+    router.refresh()
   }
 
   async function bulkDelete() {
     if (!confirm(`Удалить выбранных учеников (${selected.size})? Действие необратимо.`)) return
     setBusy(true)
-    try {
-      await Promise.all(Array.from(selected).map((id) => api(`/api/admin/users/${id}`, undefined, 'DELETE')))
-      toast.success('Удалено')
-      setSelected(new Set())
-      router.refresh()
-    } catch (e) {
-      toast.error((e as Error).message)
-    } finally {
-      setBusy(false)
-    }
+    const ids = Array.from(selected)
+    const results = await Promise.allSettled(
+      ids.map((id) => api(`/api/admin/users/${id}`, undefined, 'DELETE')),
+    )
+    const ok = results.filter((r) => r.status === 'fulfilled').length
+    const fail = results.length - ok
+    setBusy(false)
+    if (fail) toast.error(`Удалено: ${ok}, с ошибкой: ${fail}`)
+    else toast.success(`Удалено: ${ok}`)
+    setSelected(new Set())
+    router.refresh()
   }
 
   async function setRoleFor(u: User, newRole: 'student' | 'admin') {
@@ -385,7 +393,7 @@ export function UsersView({ users, courses }: { users: User[]; courses: Course[]
                         ))
                       ) : (
                         <span className="badge gray" title={u.courses.map((c) => c.title).join(', ')}>
-                          {u.courses.length} курса
+                          {u.courses.length} {plural(u.courses.length, 'курс', 'курса', 'курсов')}
                         </span>
                       )}
                     </div>

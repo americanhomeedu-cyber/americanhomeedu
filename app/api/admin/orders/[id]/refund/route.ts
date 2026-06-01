@@ -6,6 +6,14 @@ export async function POST(req: Request, { params }: { params: { id: string } })
   const { user } = await requireAdmin()
   if (!user) return new Response('Forbidden', { status: 403 })
 
+  let reason = ''
+  try {
+    const b = await req.json()
+    if (b && typeof b.reason === 'string') reason = b.reason.trim()
+  } catch {
+    /* no body — fine */
+  }
+
   const service = createServiceClient()
   const { data: order } = await service
     .from('orders')
@@ -29,15 +37,26 @@ export async function POST(req: Request, { params }: { params: { id: string } })
     }
   }
 
-  await service
+  const { error: upErr } = await service
     .from('orders')
-    .update({ status: 'refunded', refunded_at: new Date().toISOString() })
+    .update({
+      status: 'refunded',
+      refunded_at: new Date().toISOString(),
+      refund_reason: reason || null,
+    })
     .eq('id', params.id)
+  if (upErr) {
+    // Stripe already refunded — surface so it isn't blindly retried into a 2nd refund.
+    return Response.json(
+      { error: 'Возврат в Stripe выполнен, но статус заказа не обновился: ' + upErr.message },
+      { status: 500 },
+    )
+  }
 
   // Revoke the course access.
   await service
     .from('course_enrollments')
-    .update({ revoked_at: new Date().toISOString(), revoke_reason: 'refund' })
+    .update({ revoked_at: new Date().toISOString(), revoke_reason: reason || 'refund' })
     .eq('user_id', order.user_id)
     .eq('course_id', order.course_id)
 

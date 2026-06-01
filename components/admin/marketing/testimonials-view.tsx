@@ -162,7 +162,14 @@ export function TestimonialsView({ items, courseId }: { items: T[]; courseId: st
           tag: edit.tag,
           is_published: edit.is_published ?? true,
         }
-      : { name: edit.name, city: edit.city || null, rating: edit.rating, text: edit.text, tag: edit.tag || null }
+      : {
+          name: edit.name,
+          city: edit.city || null,
+          rating: edit.rating,
+          text: edit.text,
+          tag: edit.tag || null,
+          is_published: edit.is_published,
+        }
     const res = await fetch(url, {
       method: isNew ? 'POST' : 'PATCH',
       headers: { 'Content-Type': 'application/json' },
