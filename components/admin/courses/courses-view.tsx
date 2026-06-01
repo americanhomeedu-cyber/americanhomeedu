@@ -8,11 +8,24 @@ import {
   Settings,
   BookOpen,
   Star,
+  StarOff,
+  Copy,
   Trash2,
   DollarSign,
   Users,
+  GripVertical,
 } from 'lucide-react'
 import { toast } from 'sonner'
+import {
+  DndContext,
+  closestCenter,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from '@dnd-kit/core'
+import { SortableContext, useSortable, arrayMove, verticalListSortingStrategy } from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
 import { PageHeader } from '@/components/admin/page-header'
 import { StatCard } from '@/components/admin/stat-card'
 import { formatPrice } from '@/lib/utils'
@@ -35,6 +48,7 @@ function CourseRow({ c }: { c: Row }) {
   const router = useRouter()
   const [open, setOpen] = React.useState(false)
   const ref = React.useRef<HTMLDivElement>(null)
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: c.id })
 
   React.useEffect(() => {
     if (!open) return
@@ -46,6 +60,7 @@ function CourseRow({ c }: { c: Row }) {
   }, [open])
 
   async function patch(body: Record<string, unknown>, okMsg: string) {
+    setOpen(false)
     const res = await fetch(`/api/admin/courses/${c.id}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
@@ -57,7 +72,27 @@ function CourseRow({ c }: { c: Row }) {
       toast.success(okMsg)
       router.refresh()
     }
+  }
+
+  async function duplicate() {
     setOpen(false)
+    const rand = Math.random().toString(36).slice(2, 6)
+    const res = await fetch('/api/admin/courses', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        title: `${c.title} (копия)`,
+        slug: `${c.slug}-copy-${rand}`,
+        price_cents: c.price_cents,
+        is_published: false,
+      }),
+    })
+    const d = await res.json()
+    if (!res.ok) toast.error(d.error || 'Ошибка')
+    else {
+      toast.success('Курс дублирован')
+      router.refresh()
+    }
   }
 
   async function del() {
@@ -73,7 +108,17 @@ function CourseRow({ c }: { c: Row }) {
   }
 
   return (
-    <tr className="clickable" onClick={() => router.push(`/admin/courses/${c.id}/settings`)}>
+    <tr
+      ref={setNodeRef}
+      className="clickable"
+      style={{ transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.5 : 1 }}
+      onClick={() => router.push(`/admin/courses/${c.id}`)}
+    >
+      <td style={{ width: 32 }} onClick={(e) => e.stopPropagation()}>
+        <span className="cs-grip" style={{ cursor: 'grab', opacity: 1, color: 'var(--ink-3)' }} {...attributes} {...listeners}>
+          <GripVertical size={15} />
+        </span>
+      </td>
       <td>
         <div className="cell-user">
           <span className="ava s40 alt2">{c.title[0]}</span>
@@ -104,11 +149,7 @@ function CourseRow({ c }: { c: Row }) {
       </td>
       <td onClick={(e) => e.stopPropagation()}>
         <div className={`dd${open ? ' open' : ''}`} ref={ref}>
-          <button
-            className="btn btn-ghost btn-icon btn-sm"
-            onClick={() => setOpen((o) => !o)}
-            aria-label="Действия"
-          >
+          <button className="btn btn-ghost btn-icon btn-sm" onClick={() => setOpen((o) => !o)} aria-label="Действия">
             <MoreHorizontal size={16} />
           </button>
           <div className="dd-menu">
@@ -120,7 +161,16 @@ function CourseRow({ c }: { c: Row }) {
               <BookOpen size={15} />
               Редактор
             </button>
-            {!c.is_featured && (
+            <button className="dd-item" onClick={duplicate}>
+              <Copy size={15} />
+              Дублировать
+            </button>
+            {c.is_featured ? (
+              <button className="dd-item" onClick={() => patch({ is_featured: false }, 'Снят с featured')}>
+                <StarOff size={15} />
+                Снять featured
+              </button>
+            ) : (
               <button className="dd-item" onClick={() => patch({ is_featured: true }, 'Курс назначен featured')}>
                 <Star size={15} />
                 Сделать featured
@@ -140,13 +190,36 @@ function CourseRow({ c }: { c: Row }) {
 
 export function CoursesView({ courses }: { courses: Row[] }) {
   const [showCreate, setShowCreate] = React.useState(false)
-  const totalRevenue = courses.reduce((s, c) => s + c.revenue, 0)
-  const totalStudents = courses.reduce((s, c) => s + c.students, 0)
-  const currency = courses[0]?.currency || 'usd'
+  const [list, setList] = React.useState(courses)
+  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }))
+
+  React.useEffect(() => setList(courses), [courses])
+
+  const totalRevenue = list.reduce((s, c) => s + c.revenue, 0)
+  const totalStudents = list.reduce((s, c) => s + c.students, 0)
+  const publishedCount = list.filter((c) => c.is_published).length
+  const currency = list[0]?.currency || 'usd'
+
+  async function onDragEnd(e: DragEndEvent) {
+    const { active, over } = e
+    if (!over || active.id === over.id) return
+    const next = arrayMove(
+      list,
+      list.findIndex((c) => c.id === active.id),
+      list.findIndex((c) => c.id === over.id),
+    )
+    setList(next)
+    await fetch('/api/admin/courses/reorder', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ order: next.map((c) => c.id) }),
+    })
+    toast.success('Порядок сохранён')
+  }
 
   return (
     <>
-      <PageHeader title="Курсы" subtitle="Управление курсами школы">
+      <PageHeader title="Курсы" subtitle="Все продукты, которые вы продаёте через сайт">
         <button className="btn btn-primary" onClick={() => setShowCreate(true)}>
           <Plus size={16} />
           Создать курс
@@ -154,7 +227,7 @@ export function CoursesView({ courses }: { courses: Row[] }) {
       </PageHeader>
 
       <div className="stat-grid" style={{ marginBottom: 24, gridTemplateColumns: 'repeat(3, 1fr)' }}>
-        <StatCard label="Всего курсов" value={courses.length} icon={BookOpen} />
+        <StatCard label="Всего курсов" value={`${list.length} · ${publishedCount} опубл.`} icon={BookOpen} />
         <StatCard
           label="Общая выручка"
           value={formatPrice(totalRevenue, currency)}
@@ -169,6 +242,7 @@ export function CoursesView({ courses }: { courses: Row[] }) {
         <table className="tbl">
           <thead>
             <tr>
+              <th />
               <th>Курс</th>
               <th>Цена</th>
               <th>Учеников</th>
@@ -177,11 +251,15 @@ export function CoursesView({ courses }: { courses: Row[] }) {
               <th />
             </tr>
           </thead>
-          <tbody>
-            {courses.map((c) => (
-              <CourseRow key={c.id} c={c} />
-            ))}
-          </tbody>
+          <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
+            <SortableContext items={list.map((c) => c.id)} strategy={verticalListSortingStrategy}>
+              <tbody>
+                {list.map((c) => (
+                  <CourseRow key={c.id} c={c} />
+                ))}
+              </tbody>
+            </SortableContext>
+          </DndContext>
         </table>
       </div>
 
