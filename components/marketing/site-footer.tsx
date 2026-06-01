@@ -56,6 +56,7 @@ export async function SiteFooter() {
             <Link href="/privacy">Privacy Policy</Link>
             <Link href="/terms">Terms of Service</Link>
             <Link href="/refund">Refund Policy</Link>
+            <Link href="/cookies">Cookie Policy</Link>
           </div>
           <div className="footer-col">
             <h4>Контакты</h4>
