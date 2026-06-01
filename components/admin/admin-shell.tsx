@@ -2,15 +2,17 @@
 
 import * as React from 'react'
 import { AdminSidebar } from './admin-sidebar'
-import { AdminTopbar } from './admin-topbar'
+import { AdminTopbar, type Notif } from './admin-topbar'
 
 export function AdminShell({
   adminName,
   adminEmail,
+  notif,
   children,
 }: {
   adminName: string
   adminEmail?: string
+  notif: Notif
   children: React.ReactNode
 }) {
   const [sbOpen, setSbOpen] = React.useState(false)
@@ -23,7 +25,7 @@ export function AdminShell({
         onNavigate={() => setSbOpen(false)}
       />
       <div className="main">
-        <AdminTopbar onBurger={() => setSbOpen((o) => !o)} />
+        <AdminTopbar onBurger={() => setSbOpen((o) => !o)} notif={notif} />
         <main className="content">{children}</main>
       </div>
     </div>
