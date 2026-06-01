@@ -503,12 +503,22 @@ export function CourseEditor({
                     setMenuSec(menuSec === s.id ? null : s.id)
                   }}
                   onRename={() => {
+                    setMenuSec(null)
                     setRenameSec(s)
                     setRenameVal(s.title)
                   }}
-                  onDup={() => duplicateSection(s)}
-                  onPub={() => patchSection(s.id, { is_published: !s.is_published })}
-                  onDelete={() => deleteSection(s.id)}
+                  onDup={() => {
+                    setMenuSec(null)
+                    duplicateSection(s)
+                  }}
+                  onPub={() => {
+                    setMenuSec(null)
+                    patchSection(s.id, { is_published: !s.is_published })
+                  }}
+                  onDelete={() => {
+                    setMenuSec(null)
+                    deleteSection(s.id)
+                  }}
                 />
               ))}
             </SortableContext>
@@ -516,7 +526,7 @@ export function CourseEditor({
           {sections.length === 0 && (
             <div className="cell-muted" style={{ fontSize: 13, padding: 8 }}>Нет секций — создайте первую.</div>
           )}
-          <Link href="/" target="_blank" className="sb-tosite" style={{ marginTop: 14 }}>
+          <Link href={`/course/${courseId}`} target="_blank" className="sb-tosite" style={{ marginTop: 14 }}>
             <Eye size={15} />
             Просмотр курса
           </Link>

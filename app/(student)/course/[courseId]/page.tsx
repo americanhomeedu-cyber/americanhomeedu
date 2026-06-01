@@ -21,15 +21,25 @@ export default async function CoursePage({
   } = await supabase.auth.getUser()
   if (!user) redirect(`/login?redirect=/course/${params.courseId}`)
 
-  // Enrollment gate (RLS also protects the sections).
-  const { data: enr } = await supabase
-    .from('course_enrollments')
-    .select('id')
-    .eq('user_id', user.id)
-    .eq('course_id', params.courseId)
-    .is('revoked_at', null)
-    .maybeSingle()
-  if (!enr) redirect('/dashboard')
+  // Admins can preview any course (incl. draft sections); students need an
+  // active enrollment.
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('role')
+    .eq('id', user.id)
+    .single()
+  const isAdmin = profile?.role === 'admin'
+
+  if (!isAdmin) {
+    const { data: enr } = await supabase
+      .from('course_enrollments')
+      .select('id')
+      .eq('user_id', user.id)
+      .eq('course_id', params.courseId)
+      .is('revoked_at', null)
+      .maybeSingle()
+    if (!enr) redirect('/dashboard')
+  }
 
   const { data: course } = await supabase
     .from('courses')
@@ -38,12 +48,13 @@ export default async function CoursePage({
     .single()
   if (!course) redirect('/dashboard')
 
-  const { data: secs } = await supabase
+  // Students see only published sections; admins preview everything.
+  let secQuery = supabase
     .from('course_sections')
     .select('id, title, position, estimated_minutes, blocks')
     .eq('course_id', course.id)
-    .eq('is_published', true)
-    .order('position')
+  if (!isAdmin) secQuery = secQuery.eq('is_published', true)
+  const { data: secs } = await secQuery.order('position')
 
   const published = (secs ?? []).map((s) => ({
     id: s.id,
