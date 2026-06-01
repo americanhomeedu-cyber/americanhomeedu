@@ -83,6 +83,17 @@ export async function SiteFooter() {
             Курс является информационным продуктом и не заменяет юридическую или
             финансовую консультацию.
           </span>
+          <span className="footer-credit">
+            Website designed &amp; developed by{' '}
+            <a
+              href="https://alexeykachan.com/"
+              target="_blank"
+              rel="noopener"
+              style={{ textDecoration: 'underline' }}
+            >
+              Alexey Kachan Agency
+            </a>
+          </span>
         </div>
       </div>
     </footer>
