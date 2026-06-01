@@ -48,7 +48,7 @@ export function PurchaseHub({ course, name }: { course: Course; name: string }) 
             <span className="badge gold">Доступно к покупке</span>
           </span>
           <Image
-            src={course.cover_image_url || '/images/alla-guide.png'}
+            src={course.cover_image_url || '/images/alla-guide.jpg'}
             alt=""
             fill
             sizes="340px"

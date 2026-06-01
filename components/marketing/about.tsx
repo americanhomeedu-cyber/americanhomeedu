@@ -37,7 +37,7 @@ export async function About() {
       <div className="wrap about-grid">
         <div className="about-photo reveal">
           <Image
-            src="/images/alla-guide.png"
+            src="/images/alla-guide.jpg"
             alt={s.about_name}
             fill
             sizes="(max-width: 980px) 100vw, 40vw"

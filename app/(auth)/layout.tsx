@@ -11,7 +11,7 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
         <aside className="auth-brand">
           <Image
             className="ab-bg"
-            src="/images/alla-guide.png"
+            src="/images/alla-guide.jpg"
             alt=""
             fill
             sizes="(max-width: 860px) 0px, 45vw"

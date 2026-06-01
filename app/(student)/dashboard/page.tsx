@@ -113,7 +113,7 @@ export default async function DashboardPage() {
                 <span className={`badge ${status.cls}`}>{status.label}</span>
               </span>
               <Image
-                src={primary.cover_image_url || '/images/alla-guide.png'}
+                src={primary.cover_image_url || '/images/alla-guide.jpg'}
                 alt=""
                 fill
                 sizes="340px"
@@ -160,7 +160,7 @@ export default async function DashboardPage() {
                 <Link key={e.course_id} href={`/course/${e.courses!.id}`} className="cg-card">
                   <div className="cg-cover">
                     <Image
-                      src={e.courses!.cover_image_url || '/images/alla-guide.png'}
+                      src={e.courses!.cover_image_url || '/images/alla-guide.jpg'}
                       alt=""
                       fill
                       sizes="280px"

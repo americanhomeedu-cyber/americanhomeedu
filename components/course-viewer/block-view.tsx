@@ -93,7 +93,7 @@ export function BlockView({ block }: { block: Block }) {
       return (
         <div className="blk-read img">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={block.url} alt={block.caption || ''} />
+          <img src={block.url} alt={block.caption || ''} loading="lazy" decoding="async" />
           {block.caption && <div className="cap">{block.caption}</div>}
         </div>
       )

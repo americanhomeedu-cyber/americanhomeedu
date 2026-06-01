@@ -19,7 +19,12 @@ const securityHeaders = [
 
 const nextConfig = {
   reactStrictMode: true,
+  compress: true,
+  poweredByHeader: false,
   images: {
+    // Serve AVIF first (smaller), fall back to WebP. Cache optimized images 30d.
+    formats: ['image/avif', 'image/webp'],
+    minimumCacheTTL: 2592000,
     remotePatterns: [
       // Supabase Storage (course covers, images, avatars)
       { protocol: 'https', hostname: 'snmkzxdhbnkamyrmapvy.supabase.co' },
@@ -32,7 +37,18 @@ const nextConfig = {
     ],
   },
   async headers() {
-    return [{ source: '/:path*', headers: securityHeaders }]
+    return [
+      { source: '/:path*', headers: securityHeaders },
+      // Long-cache immutable static brand assets in /public.
+      {
+        source: '/images/:path*',
+        headers: [{ key: 'Cache-Control', value: 'public, max-age=2592000, stale-while-revalidate=86400' }],
+      },
+      {
+        source: '/:file(favicon.ico|robots.txt|manifest.webmanifest|apple-touch-icon.png)',
+        headers: [{ key: 'Cache-Control', value: 'public, max-age=86400' }],
+      },
+    ]
   },
 }
 
