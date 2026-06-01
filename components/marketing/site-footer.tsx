@@ -52,7 +52,7 @@ export function SiteFooter() {
           </div>
           <div className="footer-col">
             <h4>Контакты</h4>
-            <p>hello@americanhomeblueprint.com</p>
+            <p>hello@americanhomeedu.com</p>
             <a href={SOCIALS.instagram} target="_blank" rel="noopener">
               Instagram @move.us.with.alla
             </a>

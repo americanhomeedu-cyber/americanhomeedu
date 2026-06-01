@@ -236,8 +236,8 @@ create table public.site_settings (
 
 insert into public.site_settings (key, value, description) values
   ('site_title', '"American Home Blueprint"'::jsonb, ''),
-  ('contact_email', '"hello@americanhomeblueprint.com"'::jsonb, ''),
-  ('support_email', '"support@americanhomeblueprint.com"'::jsonb, ''),
+  ('contact_email', '"hello@americanhomeedu.com"'::jsonb, ''),
+  ('support_email', '"support@americanhomeedu.com"'::jsonb, ''),
   ('refund_days', '30'::jsonb, ''),
   ('default_currency', '"usd"'::jsonb, ''),
   ('hero_badge_text', '"🏡 Курс для русскоязычных в США"'::jsonb, ''),

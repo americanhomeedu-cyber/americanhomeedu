@@ -9,7 +9,7 @@ export const SITE = {
   expert: 'Alla Rizayev',
   expertRu: 'Алла Ризаева',
   // TODO(client): confirm production domain
-  domain: 'americanhomeblueprint.com',
+  domain: 'americanhomeedu.com',
 } as const
 
 export const SOCIALS = {

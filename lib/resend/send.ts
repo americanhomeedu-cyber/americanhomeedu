@@ -5,7 +5,7 @@ import { AdminNewSale } from '@/emails/admin-new-sale'
 import { ManualAccessGranted } from '@/emails/manual-access-granted'
 
 const fromAddress = () =>
-  process.env.RESEND_FROM_EMAIL || 'hello@americanhomeblueprint.com'
+  process.env.RESEND_FROM_EMAIL || 'hello@americanhomeedu.com'
 
 export async function sendPurchaseConfirmationEmail(opts: {
   to: string
