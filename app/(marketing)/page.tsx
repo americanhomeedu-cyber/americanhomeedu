@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { createPublicClient } from '@/lib/supabase/public'
+import { getSiteSettings } from '@/lib/settings'
 import { formatPrice, siteUrl } from '@/lib/utils'
 import { Hero } from '@/components/marketing/hero'
 import { Trust } from '@/components/marketing/trust'
@@ -33,14 +34,18 @@ async function getFeaturedCourse() {
 }
 
 export async function generateMetadata(): Promise<Metadata> {
-  const course = await getFeaturedCourse()
+  const [course, settings] = await Promise.all([getFeaturedCourse(), getSiteSettings()])
   if (!course) return {}
+  const title = settings.seo_title_template.includes('%s')
+    ? settings.seo_title_template.replace('%s', course.title)
+    : `${course.title} — ${settings.site_title}`
+  const description = settings.seo_description || course.subtitle || course.description || undefined
   return {
-    title: `${course.title} — American Home Blueprint`,
-    description: course.subtitle || course.description || undefined,
+    title,
+    description,
     openGraph: {
       title: course.title,
-      description: course.subtitle || undefined,
+      description,
       type: 'website',
       images: course.cover_image_url ? [{ url: course.cover_image_url }] : [],
     },
@@ -49,7 +54,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function HomePage() {
   const supabase = createPublicClient()
-  const course = await getFeaturedCourse()
+  const [course, settings] = await Promise.all([getFeaturedCourse(), getSiteSettings()])
   if (!course) notFound()
 
   const [{ data: testimonials }, { data: faqs }] = await Promise.all([
@@ -78,7 +83,14 @@ export default async function HomePage() {
 
   return (
     <>
-      <Hero priceLabel={priceLabel} ctaHref={ctaHref} />
+      <Hero
+        priceLabel={priceLabel}
+        ctaHref={ctaHref}
+        badge={settings.hero_badge_text}
+        title={settings.hero_title}
+        subtitle={settings.hero_subtitle}
+        cta={settings.hero_cta}
+      />
       <Trust />
       <PainPoints />
       <Transformation />

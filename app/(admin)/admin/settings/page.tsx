@@ -22,6 +22,7 @@ export default async function AdminSettingsPage() {
     pixelId: process.env.NEXT_PUBLIC_META_PIXEL_ID || '',
     supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL || '',
     siteUrl: process.env.NEXT_PUBLIC_SITE_URL || '',
+    stripePublishableKey: process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || '',
   }
 
   return <SettingsForm values={values} courses={courses ?? []} env={env} />

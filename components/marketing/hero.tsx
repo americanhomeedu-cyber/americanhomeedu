@@ -14,9 +14,17 @@ const POINTS = [
 export function Hero({
   priceLabel,
   ctaHref,
+  badge,
+  title,
+  subtitle,
+  cta,
 }: {
   priceLabel: string
   ctaHref: string
+  badge?: string
+  title?: string
+  subtitle?: string
+  cta?: string
 }) {
   const visualRef = React.useRef<HTMLDivElement>(null)
 
@@ -53,13 +61,17 @@ export function Hero({
     <header className="hero" id="top">
       <div className="wrap hero-grid">
         <div className="hero-copy">
-          <span className="hero-badge reveal">🏡 Курс для русскоязычных в США</span>
-          <h1 className="reveal d1">
-            Купите свой первый дом в Америке — <span className="hl">без страха и ошибок</span>
-          </h1>
+          <span className="hero-badge reveal">{badge || '🏡 Курс для русскоязычных в США'}</span>
+          {title ? (
+            <h1 className="reveal d1">{title}</h1>
+          ) : (
+            <h1 className="reveal d1">
+              Купите свой первый дом в Америке — <span className="hl">без страха и ошибок</span>
+            </h1>
+          )}
           <p className="hero-sub reveal d2">
-            Пошаговая система от лицензированного риелтора с 14-летним опытом. На
-            понятном русском языке.
+            {subtitle ||
+              'Пошаговая система от лицензированного риелтора с 14-летним опытом. На понятном русском языке.'}
           </p>
           <ul className="hero-list reveal d2">
             {POINTS.map((t) => (
@@ -73,7 +85,7 @@ export function Hero({
           </ul>
           <div className="hero-actions reveal d3">
             <Link href={ctaHref} className="btn btn-gold btn-lg">
-              Получить доступ — {priceLabel}
+              {cta || `Получить доступ — ${priceLabel}`}
             </Link>
             <Link href="/#program" className="btn btn-outline btn-lg">
               Смотреть программу

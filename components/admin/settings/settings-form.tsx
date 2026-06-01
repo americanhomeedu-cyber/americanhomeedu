@@ -6,7 +6,13 @@ import { ExternalLink, Copy, Info } from 'lucide-react'
 import { PageHeader } from '@/components/admin/page-header'
 
 type Course = { id: string; title: string; is_featured: boolean; slug: string }
-type Env = { gaId: string; pixelId: string; supabaseUrl: string; siteUrl: string }
+type Env = {
+  gaId: string
+  pixelId: string
+  supabaseUrl: string
+  siteUrl: string
+  stripePublishableKey: string
+}
 
 const SECTIONS = [
   ['general', 'Общие'],
@@ -119,6 +125,7 @@ export function SettingsForm({
   const [active, setActive] = React.useState<SectionKey>('general')
   const [vals, setVals] = React.useState<Record<string, unknown>>({ ...values })
   const [savingKey, setSavingKey] = React.useState<string | null>(null)
+  const [testing, setTesting] = React.useState(false)
   const [featuredId, setFeaturedId] = React.useState(courses.find((c) => c.is_featured)?.id || '')
 
   const set = (k: string, v: unknown) => setVals((p) => ({ ...p, [k]: v }))
@@ -161,6 +168,24 @@ export function SettingsForm({
     else toast.error('Ошибка')
   }
 
+  async function testEmail() {
+    setTesting(true)
+    try {
+      const res = await fetch('/api/admin/settings/test-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ to: txt('admin_notify_email') || undefined }),
+      })
+      const d = await res.json()
+      if (!res.ok) throw new Error(d.error || 'Ошибка отправки')
+      toast.success(`Тестовое письмо отправлено на ${d.to}`)
+    } catch (e) {
+      toast.error((e as Error).message)
+    } finally {
+      setTesting(false)
+    }
+  }
+
   const saveBtn = (section: string, keys: string[]) => (
     <button className="btn btn-primary" onClick={() => saveKeys(section, keys)} disabled={savingKey === section}>
       {savingKey === section ? 'Сохраняем…' : 'Сохранить изменения'}
@@ -192,7 +217,25 @@ export function SettingsForm({
                   <TextField label="Слоган" value={txt('slogan')} onChange={(v) => set('slogan', v)} />
                   <TextField label="Контактный email" type="email" value={txt('contact_email')} onChange={(v) => set('contact_email', v)} />
                   <TextField label="Email поддержки" type="email" value={txt('support_email')} onChange={(v) => set('support_email', v)} />
-                  {saveBtn('general', ['site_title', 'slogan', 'contact_email', 'support_email'])}
+                  <div className="row" style={{ gap: 12, alignItems: 'flex-start' }}>
+                    <div className="field" style={{ flex: 1 }}>
+                      <label>Часовой пояс</label>
+                      <select className="select" value={txt('timezone') || 'America/New_York'} onChange={(e) => set('timezone', e.target.value)}>
+                        <option value="America/New_York">America/New_York (ET)</option>
+                        <option value="America/Chicago">America/Chicago (CT)</option>
+                        <option value="America/Denver">America/Denver (MT)</option>
+                        <option value="America/Los_Angeles">America/Los_Angeles (PT)</option>
+                      </select>
+                    </div>
+                    <div className="field" style={{ flex: 1 }}>
+                      <label>Язык интерфейса</label>
+                      <select className="select" value={txt('language') || 'ru'} onChange={(e) => set('language', e.target.value)}>
+                        <option value="ru">Русский</option>
+                        <option value="en">English</option>
+                      </select>
+                    </div>
+                  </div>
+                  {saveBtn('general', ['site_title', 'slogan', 'contact_email', 'support_email', 'timezone', 'language'])}
                 </div>
               </div>
               <div className="card">
@@ -281,8 +324,12 @@ export function SettingsForm({
                   <SwitchRow label="Уведомлять о регистрациях" checked={bool(vals['notify_registration'])} onChange={(v) => set('notify_registration', v)} />
                   <SwitchRow label="Уведомлять о покупках" checked={bool(vals['notify_purchase'])} onChange={(v) => set('notify_purchase', v)} />
                   <SwitchRow label="Еженедельный дайджест" checked={bool(vals['weekly_digest'])} onChange={(v) => set('weekly_digest', v)} />
-                  <div style={{ marginTop: 16 }}>
+                  <div className="row" style={{ marginTop: 16, gap: 10 }}>
                     {saveBtn('email', ['email_from', 'email_reply_to', 'admin_notify_email', 'notify_registration', 'notify_purchase', 'weekly_digest'])}
+                    <button className="btn btn-outline" onClick={testEmail} disabled={testing}>
+                      <Info size={15} />
+                      {testing ? 'Отправляем…' : 'Отправить тест'}
+                    </button>
                   </div>
                 </div>
               </div>
@@ -310,6 +357,7 @@ export function SettingsForm({
                   <h3>Stripe</h3>
                 </div>
                 <div className="card-body">
+                  <ReadField label="Publishable Key" value={env.stripePublishableKey} mono hint="NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY" onCopy={copy} />
                   <ReadField label="Webhook URL" value={`${env.siteUrl}/api/stripe/webhook`} mono onCopy={copy} />
                   <div className="attention" style={{ background: 'var(--warning-soft)', borderColor: '#EAD9B8' }}>
                     <div className="row" style={{ gap: 8, fontSize: 13, color: 'var(--ink-2)' }}>
