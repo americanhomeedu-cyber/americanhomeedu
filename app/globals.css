@@ -86,6 +86,24 @@
     --green-tint: #edf1ef;
     --gold-deep: #a9863f;
     --gold-soft: #f5ecda;
+    /* student.css-compatible aliases (ported student styles resolve verbatim) */
+    --cream: #f5f1ea;
+    --cream-2: #efe9de;
+    --paper: #ffffff;
+    --ink: #1a1a1a;
+    --ink-2: var(--ink-soft);
+    --ink-3: var(--ink-mute);
+    --green: #2d4a3e;
+    --green-deep: #213a30;
+    --green-soft: var(--green-tint);
+    --gold: #c9a96e;
+    --line-2: var(--line-soft);
+    --r: var(--r-sm);
+    --serif: var(--font-serif);
+    --sans: var(--font-inter);
+    --success: #4a7c59;
+    --error: #b33a3a;
+    --info: #2563eb;
     --r-sm: 10px;
     --r-md: 16px;
     --r-lg: 24px;
