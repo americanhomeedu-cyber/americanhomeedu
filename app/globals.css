@@ -1,0 +1,163 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* =========================================================================
+   Design tokens — defaults are the MARKETING landing palette.
+   Each area wrapper (.theme-*) overrides the contextual variables below.
+   ========================================================================= */
+@layer base {
+  :root {
+    /* fonts */
+    --font-serif: var(--font-playfair);
+    --font-sans: var(--font-manrope);
+    --font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+
+    /* secondary text + lines */
+    --ink-soft: #4a463f;
+    --ink-mute: #8a857b;
+    --line: #e4ddd0;
+    --line-soft: #ede7db;
+
+    /* surfaces */
+    --surface: #f5f1ea;
+    --muted: #efe9de;
+    --muted-foreground: #8a857b;
+
+    /* brand tints */
+    --green-tint: #f0f3f1;
+    --gold-deep: #b8965a;
+    --gold-soft: #e2d2b0;
+
+    /* radii (marketing: 10 / 16 / 24 / 32) */
+    --r-sm: 10px;
+    --r-md: 16px;
+    --r-lg: 24px;
+    --r-xl: 32px;
+
+    /* shadows (warm) */
+    --shadow-sm: 0 1px 3px rgba(33, 30, 24, 0.06), 0 1px 2px rgba(33, 30, 24, 0.04);
+    --shadow-md: 0 10px 30px -12px rgba(33, 30, 24, 0.18), 0 4px 10px -6px rgba(33, 30, 24, 0.08);
+    --shadow-lg: 0 30px 60px -20px rgba(33, 30, 24, 0.25), 0 12px 24px -12px rgba(33, 30, 24, 0.12);
+    --shadow-gold: 0 12px 28px -10px rgba(201, 169, 110, 0.55);
+
+    /* status (shared) */
+    --success: #4a7c59;
+    --success-soft: #eaf2ec;
+    --warning: #d97706;
+    --warning-soft: #fcf1e2;
+    --error: #b33a3a;
+    --error-soft: #f8ecec;
+    --info: #2563eb;
+    --info-soft: #e9f0fd;
+
+    /* layout */
+    --pad: clamp(20px, 5vw, 64px);
+  }
+
+  /* ----- Marketing landing (explicit, mirrors :root) ----- */
+  .theme-marketing {
+    font-size: 17px;
+    line-height: 1.6;
+  }
+
+  /* ----- Student cabinet: warm palette, Inter body, 10/16/24 radii ----- */
+  .theme-student {
+    --font-sans: var(--font-inter);
+    --ink-soft: #5b564d;
+    --ink-mute: #8a857b;
+    --line: #e4ddd0;
+    --line-soft: #eee8dc;
+    --surface: #f5f1ea;
+    --muted: #efe9de;
+    --muted-foreground: #5b564d;
+    --green-tint: #edf1ef;
+    --gold-deep: #a9863f;
+    --gold-soft: #f5ecda;
+    --r-sm: 10px;
+    --r-md: 16px;
+    --r-lg: 24px;
+    --r-xl: 24px;
+    --shadow-sm: 0 1px 3px rgba(33, 30, 24, 0.06), 0 1px 2px rgba(33, 30, 24, 0.04);
+    --shadow-md: 0 12px 30px -14px rgba(33, 30, 24, 0.2), 0 4px 10px -6px rgba(33, 30, 24, 0.08);
+    --shadow-lg: 0 32px 60px -22px rgba(33, 30, 24, 0.3), 0 12px 24px -12px rgba(33, 30, 24, 0.12);
+    font-size: 15px;
+    line-height: 1.55;
+  }
+
+  /* ----- Admin panel: Linear/Stripe style, cool grays, Inter, 8/12/16 ----- */
+  .theme-admin {
+    --font-sans: var(--font-inter);
+    --ink-soft: #6b7280;
+    --ink-mute: #9ca3af;
+    --line: #e8e4dc;
+    --line-soft: #f0ece3;
+    --surface: #fafaf8;
+    --muted: #f5f1ea;
+    --muted-foreground: #6b7280;
+    --green-tint: #f0f3f1;
+    --gold-deep: #b8965a;
+    --gold-soft: #f7f0e3;
+    --r-sm: 8px;
+    --r-md: 12px;
+    --r-lg: 16px;
+    --r-xl: 16px;
+    --shadow-sm: 0 1px 3px rgba(26, 26, 26, 0.07), 0 1px 2px rgba(26, 26, 26, 0.04);
+    --shadow-md: 0 8px 24px -10px rgba(26, 26, 26, 0.16), 0 3px 8px -4px rgba(26, 26, 26, 0.08);
+    --shadow-lg: 0 24px 50px -16px rgba(26, 26, 26, 0.24), 0 8px 20px -10px rgba(26, 26, 26, 0.12);
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  * {
+    border-color: var(--line);
+  }
+  body {
+    background: var(--surface);
+    color: #1a1a1a;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-serif);
+    font-weight: 600;
+    line-height: 1.1;
+    letter-spacing: -0.01em;
+  }
+  ::selection {
+    background: var(--gold-soft);
+    color: #1a1a1a;
+  }
+}
+
+/* =========================================================================
+   Shared component utilities
+   ========================================================================= */
+@layer components {
+  /* Centered page container used by marketing sections */
+  .wrap {
+    @apply mx-auto w-full;
+    max-width: var(--maxw, 1200px);
+    padding-left: var(--pad);
+    padding-right: var(--pad);
+  }
+}
+
+/* Soft branded scrollbar (admin/dense areas) */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-thumb {
+  background: #e0dbd0;
+  border-radius: 999px;
+  border: 3px solid transparent;
+  background-clip: padding-box;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #cfc8ba;
+  background-clip: padding-box;
+}

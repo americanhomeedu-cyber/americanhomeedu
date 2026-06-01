@@ -1,0 +1,6 @@
+# pnpm 11 build-script approvals.
+# unrs-resolver is an optional native ESLint resolver that ships a JS fallback —
+# we don't need its native binary, so skip building it. This keeps
+# `pnpm install` / `pnpm add` exit codes clean (no ERR_PNPM_IGNORED_BUILDS, exit 1).
+allowBuilds:
+  unrs-resolver: false
