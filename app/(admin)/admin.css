@@ -382,6 +382,22 @@ table.tbl tbody tr.clickable { cursor: pointer; }
 .heatmap { display: grid; grid-template-columns: repeat(auto-fill, minmax(13px, 1fr)); gap: 4px; }
 .heatmap .hm-cell { aspect-ratio: 1; border-radius: 3px; background: var(--border-2); }
 
+/* dashboard revenue+donut grid (revenue spans 2 of 3 cols) */
+.dash-grid { display: grid; gap: 16px; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.dash-grid .span2 { grid-column: span 2; }
+@media (max-width: 900px) {
+  .dash-grid { grid-template-columns: 1fr; }
+  .dash-grid .span2 { grid-column: auto; }
+}
+
+/* by-course breakdown rows */
+.bc-row { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-top: 1px solid var(--border-2); }
+.bc-row:first-child { border-top: none; }
+.bc-tile { width: 30px; height: 30px; border-radius: 7px; display: grid; place-items: center; color: #fff; font-weight: 700; font-size: 13px; flex: none; }
+.bc-mid { flex: 1; min-width: 0; }
+.bc-bar { height: 6px; border-radius: 999px; background: var(--border-2); overflow: hidden; margin-top: 7px; }
+.bc-bar > div { height: 100%; border-radius: 999px; }
+
 /* generic helpers */
 .row { display: flex; align-items: center; gap: 12px; }
 .between { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
