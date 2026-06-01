@@ -1,7 +1,8 @@
 'use client'
 
+import * as React from 'react'
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import {
   LayoutDashboard,
   TrendingUp,
@@ -14,25 +15,54 @@ import {
   Settings,
   ArrowLeft,
   ChevronDown,
+  User,
+  Home,
+  LogOut,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { useCurrentCourse } from '@/lib/contexts/course-context'
+import { createClient } from '@/lib/supabase/client'
 
 type NavItem = { label: string; icon: LucideIcon; href: string; match: string }
 type NavGroup = { group: string; items: NavItem[] }
 
 export function AdminSidebar({
   adminName,
+  adminEmail,
   onNavigate,
 }: {
   adminName: string
+  adminEmail?: string
   onNavigate: () => void
 }) {
   const pathname = usePathname()
+  const router = useRouter()
+  const supabase = React.useMemo(() => createClient(), [])
   const { current, isAll, withCourse } = useCurrentCourse()
+  const [menuOpen, setMenuOpen] = React.useState(false)
+  const menuRef = React.useRef<HTMLDivElement>(null)
+
   const editorHref = current
     ? `/admin/courses/${current.id}/editor`
     : '/admin/courses'
+
+  React.useEffect(() => {
+    if (!menuOpen) return
+    function onDoc(e: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setMenuOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', onDoc)
+    return () => document.removeEventListener('mousedown', onDoc)
+  }, [menuOpen])
+
+  async function logout() {
+    setMenuOpen(false)
+    await supabase.auth.signOut()
+    router.push('/login')
+    router.refresh()
+  }
 
   const overview: NavGroup = {
     group: 'Обзор',
@@ -76,8 +106,13 @@ export function AdminSidebar({
     return pathname.startsWith(match)
   }
 
+  // full_name may equal the email (admins created via Supabase dashboard have
+  // no full_name) — show the part before @ so it fits; full email lives in the menu.
+  const displayName = adminName.includes('@')
+    ? adminName.split('@')[0]
+    : adminName
   const initials =
-    adminName
+    displayName
       .split(/\s+/)
       .map((w) => w[0])
       .filter(Boolean)
@@ -120,13 +155,40 @@ export function AdminSidebar({
           <ArrowLeft size={15} />
           Перейти на сайт
         </Link>
-        <div className="sb-user">
-          <span className="ava s32 alt">{initials}</span>
-          <div className="sb-user-info">
-            <div className="u-name">{adminName}</div>
-            <div className="u-role">Администратор</div>
+        <div
+          className={`dd up sb-user-dd${menuOpen ? ' open' : ''}`}
+          ref={menuRef}
+        >
+          <button
+            type="button"
+            className="sb-user"
+            onClick={() => setMenuOpen((o) => !o)}
+            aria-haspopup="menu"
+            aria-expanded={menuOpen}
+          >
+            <span className="ava s32 alt">{initials}</span>
+            <div className="sb-user-info">
+              <div className="u-name">{displayName}</div>
+              <div className="u-role">Администратор</div>
+            </div>
+            <ChevronDown size={16} />
+          </button>
+          <div className="dd-menu" role="menu">
+            {adminEmail && <div className="dd-label email">{adminEmail}</div>}
+            <Link className="dd-item" href="/profile" onClick={onNavigate}>
+              <User size={15} />
+              Профиль
+            </Link>
+            <Link className="dd-item" href="/" onClick={onNavigate}>
+              <Home size={15} />
+              На сайт
+            </Link>
+            <div className="dd-sep" />
+            <button type="button" className="dd-item danger" onClick={logout}>
+              <LogOut size={15} />
+              Выйти
+            </button>
           </div>
-          <ChevronDown size={16} />
         </div>
       </div>
     </aside>

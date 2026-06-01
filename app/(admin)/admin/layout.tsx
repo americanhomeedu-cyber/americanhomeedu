@@ -29,7 +29,10 @@ export default async function AdminLayout({ children }: { children: ReactNode })
   return (
     <div className="theme-admin">
       <CourseProvider courses={courses ?? []}>
-        <AdminShell adminName={profile?.full_name ?? 'Администратор'}>
+        <AdminShell
+          adminName={profile?.full_name ?? 'Администратор'}
+          adminEmail={user.email}
+        >
           {children}
         </AdminShell>
       </CourseProvider>
