@@ -390,6 +390,19 @@ table.tbl tbody tr.clickable { cursor: pointer; }
   .dash-grid .span2 { grid-column: auto; }
 }
 
+/* settings 2-col layout with sticky section nav */
+.settings-layout { display: grid; grid-template-columns: 190px 1fr; gap: 28px; align-items: start; }
+.settings-nav { position: sticky; top: 88px; display: flex; flex-direction: column; gap: 2px; }
+.settings-nav button { text-align: left; padding: 9px 12px; border-radius: var(--r); font-size: 13.5px; font-weight: 500; color: var(--ink-2); background: none; border: none; transition: background .15s, color .15s; }
+.settings-nav button:hover { background: var(--beige); color: var(--ink); }
+.settings-nav button.active { background: var(--primary); color: #fff; }
+.settings-content { display: grid; gap: 24px; max-width: 620px; min-width: 0; }
+@media (max-width: 860px) {
+  .settings-layout { grid-template-columns: 1fr; }
+  .settings-nav { position: static; flex-direction: row; overflow-x: auto; padding-bottom: 4px; }
+  .settings-nav button { white-space: nowrap; }
+}
+
 /* user detail 3-col layout */
 .user-grid { display: grid; gap: 24px; grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); align-items: start; }
 @media (max-width: 980px) { .user-grid { grid-template-columns: 1fr; } }
