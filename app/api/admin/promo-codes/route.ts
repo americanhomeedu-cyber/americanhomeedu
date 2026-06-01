@@ -9,6 +9,7 @@ const create = z.object({
   discount_value: z.number().int().positive(),
   max_uses: z.number().int().positive().nullable().optional(),
   expires_at: z.string().nullable().optional(),
+  description: z.string().nullable().optional(),
   is_active: z.boolean().default(true),
 })
 
@@ -29,6 +30,7 @@ export async function POST(req: Request) {
     discount_value: b.discount_value,
     max_uses: b.max_uses ?? null,
     expires_at: b.expires_at || null,
+    description: b.description ?? null,
     is_active: b.is_active,
   })
   if (error) {
