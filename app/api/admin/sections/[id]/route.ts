@@ -4,6 +4,7 @@ import type { Json, TablesUpdate } from '@/types/database'
 
 const update = z.object({
   title: z.string().optional(),
+  description: z.string().nullable().optional(),
   blocks: z.array(z.any()).optional(),
   is_published: z.boolean().optional(),
   position: z.number().int().optional(),
@@ -21,6 +22,7 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
   }
   const patch: TablesUpdate<'course_sections'> = {}
   if (b.title !== undefined) patch.title = b.title
+  if (b.description !== undefined) patch.description = b.description
   if (b.blocks !== undefined) patch.blocks = b.blocks as unknown as Json
   if (b.is_published !== undefined) patch.is_published = b.is_published
   if (b.position !== undefined) patch.position = b.position

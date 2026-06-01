@@ -30,6 +30,7 @@ export default async function CourseEditorPage({
   const sections = (secs ?? []).map((s) => ({
     id: s.id,
     title: s.title,
+    description: s.description,
     blocks: ((s.blocks as unknown as Block[]) ?? []).map((b) => ({
       ...b,
       id: b.id || nanoid(),
