@@ -34,7 +34,7 @@ export function Program() {
           {MODULES.map((m, i) => {
             const isOpen = open === i
             return (
-              <div key={m.title} className={`module reveal${i % 2 ? ' d1' : ''}${isOpen ? ' open' : ''}`}>
+              <div key={m.title} className={`module${isOpen ? ' open' : ''}`}>
                 <div className="module-head" onClick={() => setOpen(isOpen ? -1 : i)}>
                   <span className="module-num">{i === MODULES.length - 1 ? '★' : i + 1}</span>
                   <span className="module-title">{m.title}</span>

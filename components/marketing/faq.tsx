@@ -20,7 +20,7 @@ export function Faq({ items }: { items: FaqItem[] }) {
           {items.map((f, i) => {
             const isOpen = open === i
             return (
-              <div key={f.id} className={`faq-item reveal${isOpen ? ' open' : ''}`}>
+              <div key={f.id} className={`faq-item${isOpen ? ' open' : ''}`}>
                 <div className="faq-q" onClick={() => setOpen(isOpen ? null : i)}>
                   <span className="fq-icon" />
                   <span>{f.question}</span>
