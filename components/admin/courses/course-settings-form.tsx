@@ -18,7 +18,13 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
   )
 }
 
-export function CourseSettingsForm({ course }: { course: Course }) {
+export function CourseSettingsForm({
+  course,
+  embedded,
+}: {
+  course: Course
+  embedded?: boolean
+}) {
   const router = useRouter()
   const [f, setF] = React.useState({
     title: course.title,
@@ -94,16 +100,26 @@ export function CourseSettingsForm({ course }: { course: Course }) {
     }
   }
 
+  const header = embedded ? (
+    <div className="row" style={{ justifyContent: 'flex-end', marginBottom: 16 }}>
+      <button className="btn btn-primary" onClick={save} disabled={saving}>
+        {saving ? 'Сохраняем…' : 'Сохранить изменения'}
+      </button>
+    </div>
+  ) : (
+    <PageHeader title={course.title} subtitle={`/${course.slug}`}>
+      <Link className="btn btn-outline" href={`/admin/courses/${course.id}/editor`}>
+        Перейти к редактору
+      </Link>
+      <button className="btn btn-primary" onClick={save} disabled={saving}>
+        {saving ? 'Сохраняем…' : 'Сохранить'}
+      </button>
+    </PageHeader>
+  )
+
   return (
     <>
-      <PageHeader title={course.title} subtitle={`/${course.slug}`}>
-        <Link className="btn btn-outline" href={`/admin/courses/${course.id}/editor`}>
-          Перейти к редактору
-        </Link>
-        <button className="btn btn-primary" onClick={save} disabled={saving}>
-          {saving ? 'Сохраняем…' : 'Сохранить'}
-        </button>
-      </PageHeader>
+      {header}
 
       <div style={{ maxWidth: 560, display: 'flex', flexDirection: 'column', gap: 24 }}>
         <div className="card">
