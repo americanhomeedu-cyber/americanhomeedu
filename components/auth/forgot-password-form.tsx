@@ -2,10 +2,8 @@
 
 import * as React from 'react'
 import Link from 'next/link'
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
 import { KeyRound, Mail } from 'lucide-react'
-import { forgotSchema, type ForgotInput } from '@/lib/validations/auth'
+import { forgotSchema } from '@/lib/validations/auth'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { AuthField } from './fields'
@@ -14,22 +12,28 @@ export function ForgotPasswordForm() {
   const supabase = React.useMemo(() => createClient(), [])
   const [sent, setSent] = React.useState(false)
   const [email, setEmail] = React.useState('')
+  const [error, setError] = React.useState('')
+  const [submitting, setSubmitting] = React.useState(false)
 
-  const {
-    register,
-    handleSubmit,
-    formState: { errors, isSubmitting },
-  } = useForm<ForgotInput>({
-    resolver: zodResolver(forgotSchema),
-    defaultValues: { email: '' },
-  })
+  async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault()
+    setError('')
+    const fd = new FormData(e.currentTarget)
+    const parsed = forgotSchema.safeParse({
+      email: String(fd.get('email') ?? '').trim(),
+    })
+    if (!parsed.success) {
+      setError(parsed.error.issues[0]?.message ?? 'Введите корректный email')
+      return
+    }
 
-  async function onSubmit(data: ForgotInput) {
+    setSubmitting(true)
     // Always succeed UX-wise (don't reveal whether the account exists).
-    await supabase.auth.resetPasswordForEmail(data.email, {
+    await supabase.auth.resetPasswordForEmail(parsed.data.email, {
       redirectTo: `${window.location.origin}/auth/callback?next=/reset-password`,
     })
-    setEmail(data.email)
+    setSubmitting(false)
+    setEmail(parsed.data.email)
     setSent(true)
   }
 
@@ -60,25 +64,25 @@ export function ForgotPasswordForm() {
         <h1>Забыли пароль?</h1>
         <p>Введите email, и мы отправим ссылку для сброса пароля</p>
       </div>
-      <form onSubmit={handleSubmit(onSubmit)} noValidate>
+      <form onSubmit={onSubmit} noValidate>
         <AuthField
           id="fEmail"
+          name="email"
           label="Email"
           icon={Mail}
           type="email"
           placeholder="you@example.com"
           autoComplete="email"
-          error={errors.email?.message}
-          {...register('email')}
+          error={error}
         />
         <Button
           type="submit"
           variant="green"
           size="lg"
           className="w-full"
-          disabled={isSubmitting}
+          disabled={submitting}
         >
-          {isSubmitting ? 'Отправляем…' : 'Отправить ссылку'}
+          {submitting ? 'Отправляем…' : 'Отправить ссылку'}
         </Button>
       </form>
       <div className="auth-foot">

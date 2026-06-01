@@ -3,15 +3,17 @@
 import * as React from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
 import { AlertCircle, Mail, Phone, User } from 'lucide-react'
 import { toast } from 'sonner'
-import { registerSchema, type RegisterInput } from '@/lib/validations/auth'
+import { registerSchema } from '@/lib/validations/auth'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { AUTH } from '@/lib/constants'
 import { AuthField, PasswordField, OtpInput } from './fields'
+
+type FieldErrors = Partial<
+  Record<'fullName' | 'email' | 'phone' | 'password' | 'terms', string>
+>
 
 export function RegisterForm() {
   const router = useRouter()
@@ -19,21 +21,13 @@ export function RegisterForm() {
   const [step, setStep] = React.useState<'form' | 'code'>('form')
   const [email, setEmail] = React.useState('')
   const [serverError, setServerError] = React.useState('')
+  const [errors, setErrors] = React.useState<FieldErrors>({})
+  const [submitting, setSubmitting] = React.useState(false)
+  const [pw, setPw] = React.useState('')
   const [code, setCode] = React.useState('')
   const [verifying, setVerifying] = React.useState(false)
   const [codeError, setCodeError] = React.useState('')
   const [cooldown, setCooldown] = React.useState(0)
-  const honeypot = React.useRef<HTMLInputElement>(null)
-
-  const {
-    register,
-    handleSubmit,
-    watch,
-    formState: { errors, isSubmitting },
-  } = useForm<RegisterInput>({
-    resolver: zodResolver(registerSchema),
-    defaultValues: { fullName: '', email: '', phone: '', password: '', terms: false },
-  })
 
   React.useEffect(() => {
     if (cooldown <= 0) return
@@ -41,19 +35,45 @@ export function RegisterForm() {
     return () => clearTimeout(t)
   }, [cooldown])
 
-  async function onSubmit(data: RegisterInput) {
-    if (honeypot.current?.value) return // bot trap
+  async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault()
+    const fd = new FormData(e.currentTarget)
+    if (String(fd.get('website') ?? '')) return // honeypot: bot trap
     setServerError('')
+    setErrors({})
+
+    const values = {
+      fullName: String(fd.get('fullName') ?? '').trim(),
+      email: String(fd.get('email') ?? '').trim(),
+      phone: String(fd.get('phone') ?? '').trim(),
+      password: String(fd.get('password') ?? ''),
+      terms: fd.get('terms') === 'on',
+    }
+    const parsed = registerSchema.safeParse(values)
+    if (!parsed.success) {
+      const fe: FieldErrors = {}
+      for (const issue of parsed.error.issues) {
+        const key = issue.path[0] as keyof FieldErrors
+        if (key && !fe[key]) fe[key] = issue.message
+      }
+      setErrors(fe)
+      return
+    }
+
+    setSubmitting(true)
     const { data: res, error } = await supabase.auth.signUp({
-      email: data.email,
-      password: data.password,
-      options: { data: { full_name: data.fullName, phone: data.phone } },
+      email: parsed.data.email,
+      password: parsed.data.password,
+      options: {
+        data: { full_name: parsed.data.fullName, phone: parsed.data.phone },
+      },
     })
+    setSubmitting(false)
     if (error) {
       setServerError(error.message)
       return
     }
-    setEmail(data.email)
+    setEmail(parsed.data.email)
     // Confirm email OFF -> session exists -> straight to dashboard.
     if (res.session) {
       router.push('/dashboard')
@@ -132,7 +152,6 @@ export function RegisterForm() {
     )
   }
 
-  const pw = watch('password')
   return (
     <>
       <div className="auth-head">
@@ -145,46 +164,47 @@ export function RegisterForm() {
           <div>{serverError}</div>
         </div>
       )}
-      <form onSubmit={handleSubmit(onSubmit)} noValidate>
+      <form onSubmit={onSubmit} noValidate>
         <AuthField
           id="rName"
+          name="fullName"
           label="Имя и фамилия"
           icon={User}
           placeholder="Александр Петров"
           autoComplete="name"
-          error={errors.fullName?.message}
-          {...register('fullName')}
+          error={errors.fullName}
         />
         <AuthField
           id="rEmail"
+          name="email"
           label="Email"
           icon={Mail}
           type="email"
           placeholder="you@example.com"
           autoComplete="email"
-          error={errors.email?.message}
-          {...register('email')}
+          error={errors.email}
         />
         <AuthField
           id="rPhone"
+          name="phone"
           label="Номер телефона"
           icon={Phone}
           type="tel"
           placeholder="+1 (704) 555-0142"
           autoComplete="tel"
-          error={errors.phone?.message}
-          {...register('phone')}
+          error={errors.phone}
         />
         <PasswordField
           id="rPw"
+          name="password"
           label="Пароль"
           showMeter
           value={pw}
-          error={errors.password?.message}
-          registration={register('password')}
+          onValueChange={setPw}
+          autoComplete="new-password"
+          error={errors.password}
         />
         <input
-          ref={honeypot}
           type="text"
           name="website"
           tabIndex={-1}
@@ -193,7 +213,7 @@ export function RegisterForm() {
           aria-hidden
         />
         <div className="check-row">
-          <input id="rTerms" type="checkbox" {...register('terms')} />
+          <input id="rTerms" name="terms" type="checkbox" />
           <label htmlFor="rTerms">
             Я принимаю{' '}
             <Link href="/terms" target="_blank">
@@ -207,7 +227,7 @@ export function RegisterForm() {
         </div>
         {errors.terms && (
           <div className="err-msg" style={{ marginTop: -10, marginBottom: 14 }}>
-            {errors.terms.message}
+            {errors.terms}
           </div>
         )}
         <Button
@@ -215,9 +235,9 @@ export function RegisterForm() {
           variant="green"
           size="lg"
           className="w-full"
-          disabled={isSubmitting}
+          disabled={submitting}
         >
-          {isSubmitting ? 'Создаём аккаунт…' : 'Создать аккаунт'}
+          {submitting ? 'Создаём аккаунт…' : 'Создать аккаунт'}
         </Button>
       </form>
       <div className="auth-foot">

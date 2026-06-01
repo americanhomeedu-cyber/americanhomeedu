@@ -4,7 +4,6 @@ import * as React from 'react'
 import Link from 'next/link'
 import { Check, Eye, EyeOff, Lock } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
-import type { UseFormRegisterReturn } from 'react-hook-form'
 
 export function pwState(v: string) {
   return { len: v.length >= 8, up: /[A-Z]/.test(v), num: /[0-9]/.test(v) }
@@ -56,23 +55,28 @@ export function AuthField({
 export function PasswordField({
   label,
   id,
+  name,
   error,
   showMeter,
-  value = '',
-  registration,
+  value,
+  onValueChange,
   link,
+  autoComplete,
 }: {
   label: string
   id: string
+  name: string
   error?: string
   showMeter?: boolean
   value?: string
-  registration: UseFormRegisterReturn
+  onValueChange?: (v: string) => void
   link?: { href: string; label: string }
+  autoComplete?: string
 }) {
   const [show, setShow] = React.useState(false)
-  const st = pwState(value)
-  const score = pwScore(value)
+  const v = value ?? ''
+  const st = pwState(v)
+  const score = pwScore(v)
   const reqs: Array<[keyof typeof st, string]> = [
     ['len', 'Минимум 8 символов'],
     ['up', 'Заглавная буква'],
@@ -92,9 +96,13 @@ export function PasswordField({
         <Lock className="lead" size={17} />
         <input
           id={id}
+          name={name}
           type={show ? 'text' : 'password'}
           className={error ? 'err' : ''}
-          {...registration}
+          autoComplete={autoComplete}
+          {...(onValueChange
+            ? { value: v, onChange: (e) => onValueChange(e.target.value) }
+            : {})}
         />
         <button
           type="button"

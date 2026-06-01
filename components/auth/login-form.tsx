@@ -3,11 +3,9 @@
 import * as React from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
 import { AlertCircle, Info, Mail } from 'lucide-react'
 import { toast } from 'sonner'
-import { loginSchema, type LoginInput } from '@/lib/validations/auth'
+import { loginSchema } from '@/lib/validations/auth'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { AuthField, PasswordField } from './fields'
@@ -17,25 +15,42 @@ export function LoginForm({ redirect }: { redirect?: string }) {
   const supabase = React.useMemo(() => createClient(), [])
   const [serverError, setServerError] = React.useState('')
   const [needsConfirm, setNeedsConfirm] = React.useState(false)
+  const [errors, setErrors] = React.useState<{ email?: string; password?: string }>({})
+  const [loading, setLoading] = React.useState(false)
+  const lastEmail = React.useRef('')
 
-  const {
-    register,
-    handleSubmit,
-    getValues,
-    watch,
-    formState: { errors, isSubmitting },
-  } = useForm<LoginInput>({
-    resolver: zodResolver(loginSchema),
-    defaultValues: { email: '', password: '' },
-  })
-
-  async function onSubmit(data: LoginInput) {
+  async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault()
     setServerError('')
     setNeedsConfirm(false)
+    setErrors({})
+
+    // Read live DOM values via FormData. This captures browser autofill,
+    // which react-hook-form can miss (it relies on change events that
+    // autofill may not dispatch). Validate with zod directly — no resolver.
+    const fd = new FormData(e.currentTarget)
+    const values = {
+      email: String(fd.get('email') ?? '').trim(),
+      password: String(fd.get('password') ?? ''),
+    }
+    const parsed = loginSchema.safeParse(values)
+    if (!parsed.success) {
+      const fe: { email?: string; password?: string } = {}
+      for (const issue of parsed.error.issues) {
+        const key = issue.path[0] as 'email' | 'password'
+        if (key && !fe[key]) fe[key] = issue.message
+      }
+      setErrors(fe)
+      return
+    }
+
+    lastEmail.current = parsed.data.email
+    setLoading(true)
     const { error } = await supabase.auth.signInWithPassword({
-      email: data.email,
-      password: data.password,
+      email: parsed.data.email,
+      password: parsed.data.password,
     })
+    setLoading(false)
     if (error) {
       if (/confirm/i.test(error.message)) {
         setNeedsConfirm(true)
@@ -49,7 +64,8 @@ export function LoginForm({ redirect }: { redirect?: string }) {
   }
 
   async function resendConfirm() {
-    const email = getValues('email')
+    const email = lastEmail.current
+    if (!email) return
     await supabase.auth.resend({ type: 'signup', email })
     toast.info('Код подтверждения отправлен')
     router.push('/verify-email?email=' + encodeURIComponent(email))
@@ -82,23 +98,23 @@ export function LoginForm({ redirect }: { redirect?: string }) {
           </div>
         </div>
       )}
-      <form onSubmit={handleSubmit(onSubmit)} noValidate>
+      <form onSubmit={onSubmit} noValidate>
         <AuthField
           id="lEmail"
+          name="email"
           label="Email"
           icon={Mail}
           type="email"
           placeholder="you@example.com"
           autoComplete="email"
-          error={errors.email?.message}
-          {...register('email')}
+          error={errors.email}
         />
         <PasswordField
           id="lPw"
+          name="password"
           label="Пароль"
-          value={watch('password')}
-          error={errors.password?.message}
-          registration={register('password')}
+          autoComplete="current-password"
+          error={errors.password}
           link={{ href: '/forgot-password', label: 'Забыли пароль?' }}
         />
         <div className="check-row">
@@ -110,9 +126,9 @@ export function LoginForm({ redirect }: { redirect?: string }) {
           variant="green"
           size="lg"
           className="w-full"
-          disabled={isSubmitting}
+          disabled={loading}
         >
-          {isSubmitting ? 'Входим…' : 'Войти'}
+          {loading ? 'Входим…' : 'Войти'}
         </Button>
       </form>
       <div className="auth-foot">
