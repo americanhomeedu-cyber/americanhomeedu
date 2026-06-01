@@ -55,8 +55,20 @@
     --pad: clamp(20px, 5vw, 64px);
   }
 
-  /* ----- Marketing landing (explicit, mirrors :root) ----- */
+  /* ----- Marketing landing: brand aliases so the ported landing.css
+     (from the design's styles.css) resolves verbatim ----- */
   .theme-marketing {
+    --cream: #f5f1ea;
+    --cream-deep: #efe9de;
+    --paper: #ffffff;
+    --ink: #1a1a1a;
+    --green: #2d4a3e;
+    --green-deep: #213a30;
+    --green-soft: #3c6151;
+    --gold: #c9a96e;
+    --serif: var(--font-serif);
+    --sans: var(--font-sans);
+    --maxw: 1200px;
     font-size: 17px;
     line-height: 1.6;
   }

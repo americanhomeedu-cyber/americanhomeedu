@@ -8,3 +8,14 @@ import { twMerge } from 'tailwind-merge'
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
+
+/** Format integer cents as a price, e.g. 39700 -> "$397". */
+export function formatPrice(cents: number, currency = 'usd') {
+  const symbol = currency.toLowerCase() === 'usd' ? '$' : ''
+  return symbol + Math.round(cents / 100).toLocaleString('en-US')
+}
+
+/** Absolute site URL base (no trailing slash). */
+export function siteUrl() {
+  return process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000'
+}
