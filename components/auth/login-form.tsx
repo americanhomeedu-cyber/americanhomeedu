@@ -46,12 +46,12 @@ export function LoginForm({ redirect }: { redirect?: string }) {
 
     lastEmail.current = parsed.data.email
     setLoading(true)
-    const { error } = await supabase.auth.signInWithPassword({
+    const { data: signIn, error } = await supabase.auth.signInWithPassword({
       email: parsed.data.email,
       password: parsed.data.password,
     })
-    setLoading(false)
     if (error) {
+      setLoading(false)
       if (/confirm/i.test(error.message)) {
         setNeedsConfirm(true)
         return
@@ -59,7 +59,18 @@ export function LoginForm({ redirect }: { redirect?: string }) {
       setServerError('Неверный email или пароль')
       return
     }
-    router.push(redirect || '/dashboard')
+    // An explicit redirect (e.g. user was bounced from a protected page) wins.
+    // Otherwise route by role: admins land in the panel, students in dashboard.
+    let target = redirect
+    if (!target) {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', signIn.user.id)
+        .single()
+      target = profile?.role === 'admin' ? '/admin' : '/dashboard'
+    }
+    router.push(target)
     router.refresh()
   }
 
