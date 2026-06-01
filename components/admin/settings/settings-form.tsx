@@ -426,7 +426,11 @@ export function SettingsForm({
                   <AreaField label="Политика конфиденциальности" value={txt('legal_privacy')} onChange={(v) => set('legal_privacy', v)} />
                   <AreaField label="Условия использования" value={txt('legal_terms')} onChange={(v) => set('legal_terms', v)} />
                   <AreaField label="Политика возврата" value={txt('legal_refund')} onChange={(v) => set('legal_refund', v)} />
-                  {saveBtn('legal', ['legal_privacy', 'legal_terms', 'legal_refund'])}
+                  <AreaField label="Политика cookie" value={txt('legal_cookies')} onChange={(v) => set('legal_cookies', v)} />
+                  {saveBtn('legal', ['legal_privacy', 'legal_terms', 'legal_refund', 'legal_cookies'])}
+                  <div className="hint" style={{ marginTop: 12 }}>
+                    Если поле пустое — на странице показывается готовый текст по умолчанию. Заполните, чтобы заменить его своим.
+                  </div>
                 </div>
               </div>
               <div className="card">
