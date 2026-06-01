@@ -1,6 +1,10 @@
 import type { Metadata } from 'next'
 import { Playfair_Display, Manrope, Inter } from 'next/font/google'
 import { Toaster } from 'sonner'
+import { Analytics } from '@vercel/analytics/next'
+import { SpeedInsights } from '@vercel/speed-insights/next'
+import { AnalyticsScripts } from '@/components/analytics/analytics-scripts'
+import { PageViewTracker } from '@/components/analytics/page-view-tracker'
 import './globals.css'
 
 /**
@@ -47,6 +51,10 @@ export default function RootLayout({
       <body className="font-sans antialiased">
         {children}
         <Toaster position="bottom-right" richColors closeButton />
+        <PageViewTracker />
+        <AnalyticsScripts />
+        <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   )
