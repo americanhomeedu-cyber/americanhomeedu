@@ -390,6 +390,15 @@ table.tbl tbody tr.clickable { cursor: pointer; }
   .dash-grid .span2 { grid-column: auto; }
 }
 
+/* user detail 3-col layout */
+.user-grid { display: grid; gap: 24px; grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); align-items: start; }
+@media (max-width: 980px) { .user-grid { grid-template-columns: 1fr; } }
+.mini-stat { background: var(--card); border: 1px solid var(--border); border-radius: var(--r-lg); padding: 16px; }
+.mini-stat .ms-label { font-size: 11px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-3); }
+.mini-stat .ms-num { font-size: 22px; font-weight: 700; margin-top: 6px; letter-spacing: -.01em; }
+.danger-zone { border-color: #E8C9C9; }
+.danger-zone .card-head { border-color: #F1DBDB; }
+
 /* by-course breakdown rows */
 .bc-row { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-top: 1px solid var(--border-2); }
 .bc-row:first-child { border-top: none; }
