@@ -4,6 +4,7 @@ import * as React from 'react'
 import { toast } from 'sonner'
 import { ExternalLink, Copy, Info } from 'lucide-react'
 import { PageHeader } from '@/components/admin/page-header'
+import { LegalEditor } from './legal-editor'
 
 type Course = { id: string; title: string; is_featured: boolean; slug: string }
 type Env = {
@@ -17,7 +18,6 @@ type Env = {
 const SECTIONS = [
   ['general', 'Общие'],
   ['landing', 'Лендинг'],
-  ['texts', 'Тексты лендинга'],
   ['email', 'Email'],
   ['payments', 'Платежи'],
   ['integrations', 'Интеграции'],
@@ -283,34 +283,6 @@ export function SettingsForm({
             </div>
           )}
 
-          {active === 'texts' && (
-            <>
-              <div className="card">
-                <div className="card-head">
-                  <h3>Hero-секция</h3>
-                </div>
-                <div className="card-body">
-                  <TextField label="Текст бейджа" value={txt('hero_badge_text')} onChange={(v) => set('hero_badge_text', v)} />
-                  <TextField label="Заголовок" value={txt('hero_title')} onChange={(v) => set('hero_title', v)} />
-                  <TextField label="Подзаголовок" value={txt('hero_subtitle')} onChange={(v) => set('hero_subtitle', v)} />
-                  <TextField label="Текст кнопки" value={txt('hero_cta')} onChange={(v) => set('hero_cta', v)} />
-                  {saveBtn('hero', ['hero_badge_text', 'hero_title', 'hero_subtitle', 'hero_cta'])}
-                </div>
-              </div>
-              <div className="card">
-                <div className="card-head">
-                  <h3>Об авторе</h3>
-                </div>
-                <div className="card-body">
-                  <TextField label="Имя" value={txt('about_name')} onChange={(v) => set('about_name', v)} />
-                  <TextField label="Должность / регалии" value={txt('about_role')} onChange={(v) => set('about_role', v)} />
-                  <AreaField label="Биография" value={txt('about_bio')} onChange={(v) => set('about_bio', v)} />
-                  {saveBtn('about', ['about_name', 'about_role', 'about_bio'])}
-                </div>
-              </div>
-            </>
-          )}
-
           {active === 'email' && (
             <>
               <div className="card">
@@ -423,13 +395,25 @@ export function SettingsForm({
                   <h3>Юридические документы</h3>
                 </div>
                 <div className="card-body">
-                  <AreaField label="Политика конфиденциальности" value={txt('legal_privacy')} onChange={(v) => set('legal_privacy', v)} />
-                  <AreaField label="Условия использования" value={txt('legal_terms')} onChange={(v) => set('legal_terms', v)} />
-                  <AreaField label="Политика возврата" value={txt('legal_refund')} onChange={(v) => set('legal_refund', v)} />
-                  <AreaField label="Политика cookie" value={txt('legal_cookies')} onChange={(v) => set('legal_cookies', v)} />
+                  <div className="field">
+                    <label>Политика конфиденциальности</label>
+                    <LegalEditor value={txt('legal_privacy')} onChange={(v) => set('legal_privacy', v)} />
+                  </div>
+                  <div className="field">
+                    <label>Условия использования</label>
+                    <LegalEditor value={txt('legal_terms')} onChange={(v) => set('legal_terms', v)} />
+                  </div>
+                  <div className="field">
+                    <label>Политика возврата</label>
+                    <LegalEditor value={txt('legal_refund')} onChange={(v) => set('legal_refund', v)} />
+                  </div>
+                  <div className="field">
+                    <label>Политика cookie</label>
+                    <LegalEditor value={txt('legal_cookies')} onChange={(v) => set('legal_cookies', v)} />
+                  </div>
                   {saveBtn('legal', ['legal_privacy', 'legal_terms', 'legal_refund', 'legal_cookies'])}
                   <div className="hint" style={{ marginTop: 12 }}>
-                    Если поле пустое — на странице показывается готовый текст по умолчанию. Заполните, чтобы заменить его своим.
+                    Это содержимое соответствующих страниц сайта. Изменения появляются после сохранения (в течение минуты).
                   </div>
                 </div>
               </div>

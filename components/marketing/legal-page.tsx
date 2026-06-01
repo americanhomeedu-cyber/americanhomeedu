@@ -27,6 +27,26 @@ export function LegalPage({ title, children }: { title: string; children: ReactN
   )
 }
 
+/**
+ * Render admin-authored rich HTML (from the settings WYSIWYG editor). The
+ * content only ever comes from an authenticated admin via a constrained
+ * TipTap editor, so a lightweight strip of scripts / inline handlers /
+ * javascript: URLs is enough — and it avoids pulling jsdom (isomorphic-dompurify)
+ * into statically-prerendered pages, which breaks the build.
+ */
+function stripDangerous(html: string) {
+  return html
+    .replace(/<\s*script[\s\S]*?<\s*\/\s*script\s*>/gi, '')
+    .replace(/<\s*\/?\s*(iframe|object|embed)[^>]*>/gi, '')
+    .replace(/\son\w+\s*=\s*"[^"]*"/gi, '')
+    .replace(/\son\w+\s*=\s*'[^']*'/gi, '')
+    .replace(/javascript:/gi, '')
+}
+
+export function LegalHtml({ html }: { html: string }) {
+  return <div dangerouslySetInnerHTML={{ __html: stripDangerous(html) }} />
+}
+
 /** Render an admin-provided plain-text override (from site_settings) as paragraphs. */
 export function LegalOverride({ text }: { text: string }) {
   return (

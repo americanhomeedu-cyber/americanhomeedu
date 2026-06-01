@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { LegalPage, LegalOverride } from '@/components/marketing/legal-page'
+import { LegalPage, LegalHtml } from '@/components/marketing/legal-page'
 import { getSiteSettings } from '@/lib/settings'
 
 export const metadata: Metadata = {
@@ -15,7 +15,7 @@ export default async function PrivacyPage() {
   if (s.legal_privacy?.trim()) {
     return (
       <LegalPage title="Политика конфиденциальности">
-        <LegalOverride text={s.legal_privacy} />
+        <LegalHtml html={s.legal_privacy} />
       </LegalPage>
     )
   }

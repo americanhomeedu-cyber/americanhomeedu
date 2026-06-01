@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { LegalPage, LegalOverride } from '@/components/marketing/legal-page'
+import { LegalPage, LegalHtml } from '@/components/marketing/legal-page'
 import { getSiteSettings } from '@/lib/settings'
 
 export const metadata: Metadata = {
@@ -14,7 +14,7 @@ export default async function RefundPage() {
   if (s.legal_refund?.trim()) {
     return (
       <LegalPage title="Политика возврата">
-        <LegalOverride text={s.legal_refund} />
+        <LegalHtml html={s.legal_refund} />
       </LegalPage>
     )
   }
