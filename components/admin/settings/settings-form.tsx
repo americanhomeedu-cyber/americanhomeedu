@@ -390,31 +390,44 @@ export function SettingsForm({
 
           {active === 'legal' && (
             <>
+              <div className="hint" style={{ marginBottom: 4 }}>
+                Это содержимое соответствующих страниц сайта. У каждого документа
+                своя кнопка «Сохранить» — изменения появятся на сайте в течение минуты.
+              </div>
               <div className="card">
                 <div className="card-head">
-                  <h3>Юридические документы</h3>
+                  <h3>Политика конфиденциальности</h3>
                 </div>
                 <div className="card-body">
-                  <div className="field">
-                    <label>Политика конфиденциальности</label>
-                    <LegalEditor value={txt('legal_privacy')} onChange={(v) => set('legal_privacy', v)} />
-                  </div>
-                  <div className="field">
-                    <label>Условия использования</label>
-                    <LegalEditor value={txt('legal_terms')} onChange={(v) => set('legal_terms', v)} />
-                  </div>
-                  <div className="field">
-                    <label>Политика возврата</label>
-                    <LegalEditor value={txt('legal_refund')} onChange={(v) => set('legal_refund', v)} />
-                  </div>
-                  <div className="field">
-                    <label>Политика cookie</label>
-                    <LegalEditor value={txt('legal_cookies')} onChange={(v) => set('legal_cookies', v)} />
-                  </div>
-                  {saveBtn('legal', ['legal_privacy', 'legal_terms', 'legal_refund', 'legal_cookies'])}
-                  <div className="hint" style={{ marginTop: 12 }}>
-                    Это содержимое соответствующих страниц сайта. Изменения появляются после сохранения (в течение минуты).
-                  </div>
+                  <LegalEditor value={txt('legal_privacy')} onChange={(v) => set('legal_privacy', v)} />
+                  <div style={{ marginTop: 14 }}>{saveBtn('legal_privacy', ['legal_privacy'])}</div>
+                </div>
+              </div>
+              <div className="card">
+                <div className="card-head">
+                  <h3>Условия использования</h3>
+                </div>
+                <div className="card-body">
+                  <LegalEditor value={txt('legal_terms')} onChange={(v) => set('legal_terms', v)} />
+                  <div style={{ marginTop: 14 }}>{saveBtn('legal_terms', ['legal_terms'])}</div>
+                </div>
+              </div>
+              <div className="card">
+                <div className="card-head">
+                  <h3>Политика возврата</h3>
+                </div>
+                <div className="card-body">
+                  <LegalEditor value={txt('legal_refund')} onChange={(v) => set('legal_refund', v)} />
+                  <div style={{ marginTop: 14 }}>{saveBtn('legal_refund', ['legal_refund'])}</div>
+                </div>
+              </div>
+              <div className="card">
+                <div className="card-head">
+                  <h3>Политика cookie</h3>
+                </div>
+                <div className="card-body">
+                  <LegalEditor value={txt('legal_cookies')} onChange={(v) => set('legal_cookies', v)} />
+                  <div style={{ marginTop: 14 }}>{saveBtn('legal_cookies', ['legal_cookies'])}</div>
                 </div>
               </div>
               <div className="card">
