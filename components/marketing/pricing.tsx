@@ -1,4 +1,5 @@
 import { Check, ShieldCheck } from 'lucide-react'
+import { CtaLink } from './cta-link'
 
 const FEATURES = [
   '7 модулей + бонус — от подготовки до ключей',
@@ -41,9 +42,9 @@ export function Pricing({
               </li>
             ))}
           </ul>
-          <a href={ctaHref} className="btn btn-gold btn-lg">
+          <CtaLink href={ctaHref} className="btn btn-gold btn-lg">
             Получить доступ сейчас
-          </a>
+          </CtaLink>
           <p className="price-guarantee">
             <ShieldCheck size={18} /> 30-дневная гарантия возврата денег
           </p>

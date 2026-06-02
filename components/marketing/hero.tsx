@@ -4,6 +4,7 @@ import * as React from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { Check, Star } from 'lucide-react'
+import { track } from '@/lib/analytics/track'
 
 const POINTS = [
   'Полный путь от подготовки до получения ключей',
@@ -84,7 +85,7 @@ export function Hero({
             ))}
           </ul>
           <div className="hero-actions reveal d3">
-            <Link href={ctaHref} className="btn btn-gold btn-lg">
+            <Link href={ctaHref} className="btn btn-gold btn-lg" onClick={() => track('cta_click')}>
               {cta || `Получить доступ — ${priceLabel}`}
             </Link>
             <Link href="/#program" className="btn btn-outline btn-lg">

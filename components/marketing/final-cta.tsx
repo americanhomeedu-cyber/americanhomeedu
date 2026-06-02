@@ -1,3 +1,5 @@
+import { CtaLink } from './cta-link'
+
 export function FinalCta({
   ctaHref,
   priceLabel,
@@ -14,9 +16,9 @@ export function FinalCta({
           Каждый месяц промедления — это упущенная возможность зафиксировать ставку,
           цену и начать строить капитал. Начните разбираться сегодня.
         </p>
-        <a href={ctaHref} className="btn btn-gold btn-lg">
+        <CtaLink href={ctaHref} className="btn btn-gold btn-lg">
           Начать курс — {priceLabel}
-        </a>
+        </CtaLink>
         <p className="final-note">
           💳 Безопасная оплата через Stripe · мгновенный доступ · гарантия 30 дней
         </p>
