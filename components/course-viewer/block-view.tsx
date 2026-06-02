@@ -37,11 +37,11 @@ export function BlockView({ block }: { block: Block }) {
       return (
         <div
           className="blk-read p"
-          dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(block.html) }}
+          dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(block.html ?? '') }}
         />
       )
     case 'list': {
-      const items = block.items
+      const items = (block.items ?? [])
         .filter((it) => it.trim())
         .map((it, i) => <li key={i}>{it}</li>)
       return block.ordered ? (

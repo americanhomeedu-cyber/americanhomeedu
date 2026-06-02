@@ -23,7 +23,13 @@ export async function POST(req: Request) {
 
   if (event.type === 'checkout.session.completed') {
     const session = event.data.object as Stripe.Checkout.Session
-    await fulfillCheckoutSession(session.id)
+    try {
+      await fulfillCheckoutSession(session.id)
+    } catch (err) {
+      // Don't 500 → Stripe won't retry-storm. fulfill is idempotent, and the
+      // /checkout/success confirm path is the backup that also grants access.
+      console.error('[webhook] fulfillment error:', err)
+    }
   }
 
   return Response.json({ received: true })

@@ -28,13 +28,14 @@ export async function POST(req: Request) {
     .single()
   if (!course) return Response.json({ error: 'Курс не найден' }, { status: 404 })
 
-  // Already has active access?
+  // Already has active (non-revoked, non-expired) access?
   const { data: existing } = await supabase
     .from('course_enrollments')
     .select('id')
     .eq('user_id', user.id)
     .eq('course_id', courseId)
     .is('revoked_at', null)
+    .or(`expires_at.is.null,expires_at.gt.${new Date().toISOString()}`)
     .maybeSingle()
   if (existing) {
     return Response.json(

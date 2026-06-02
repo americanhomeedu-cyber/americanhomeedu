@@ -2,7 +2,6 @@
 
 import * as React from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
 import {
   Book,
   ChevronLeft,
@@ -13,7 +12,6 @@ import {
   Play,
 } from 'lucide-react'
 import { toast } from 'sonner'
-import { Button } from '@/components/ui/button'
 import { BlockView } from './block-view'
 import type { Block } from '@/types/blocks'
 
@@ -37,7 +35,6 @@ export function CourseViewer({
   currentId: string
   doneIds: string[]
 }) {
-  const router = useRouter()
   const [sideOpen, setSideOpen] = React.useState(false)
   const [done, setDone] = React.useState<Set<string>>(new Set(doneIds))
   const [saving, setSaving] = React.useState(false)
@@ -68,7 +65,8 @@ export function CourseViewer({
     })
     if (next) toast.success('Раздел отмечен пройденным')
     else toast.info('Отметка снята')
-    router.refresh()
+    // No router.refresh() — local `done` state already reflects the change;
+    // refreshing would re-pick the "next incomplete" section and jump away.
   }
 
   if (!sec) return null
@@ -159,25 +157,21 @@ export function CourseViewer({
           </div>
           <div className="sec-nav">
             {idx > 0 ? (
-              <Button asChild variant="outline">
-                <Link href={`/course/${courseId}?s=${sections[idx - 1].id}`}>
-                  <ChevronLeft size={17} />
-                  Предыдущий
-                </Link>
-              </Button>
+              <Link className="btn btn-outline" href={`/course/${courseId}?s=${sections[idx - 1].id}`}>
+                <ChevronLeft size={17} />
+                Предыдущий
+              </Link>
             ) : (
               <span />
             )}
             {!last ? (
-              <Button asChild variant="green" className="right">
-                <Link href={`/course/${courseId}?s=${sections[idx + 1].id}`}>
-                  Следующий раздел <ChevronRight size={17} />
-                </Link>
-              </Button>
+              <Link className="btn btn-primary right" href={`/course/${courseId}?s=${sections[idx + 1].id}`}>
+                Следующий раздел <ChevronRight size={17} />
+              </Link>
             ) : isDone ? (
-              <Button asChild variant="gold" className="right">
-                <Link href="/dashboard">Завершить курс 🎉</Link>
-              </Button>
+              <Link className="btn btn-primary right" href="/dashboard">
+                Завершить курс 🎉
+              </Link>
             ) : (
               <span />
             )}

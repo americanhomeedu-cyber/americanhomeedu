@@ -21,13 +21,7 @@ export function CheckoutSuccess({ sessionId }: { sessionId: string }) {
     }
     let cancelled = false
     let attempts = 0
-
-    // Backup fulfillment in case the webhook is delayed.
-    fetch('/api/stripe/confirm', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ sessionId }),
-    }).catch(() => {})
+    let courseId: string | null = null
 
     const poll = async () => {
       if (cancelled) return
@@ -36,13 +30,15 @@ export function CheckoutSuccess({ sessionId }: { sessionId: string }) {
         data: { user },
       } = await supabase.auth.getUser()
       if (user) {
-        const { data: enr } = await supabase
+        // Scope to the course just purchased so a returning buyer who already
+        // owns another course isn't redirected before THIS access is granted.
+        let q = supabase
           .from('course_enrollments')
           .select('id')
           .eq('user_id', user.id)
           .is('revoked_at', null)
-          .limit(1)
-          .maybeSingle()
+        if (courseId) q = q.eq('course_id', courseId)
+        const { data: enr } = await q.limit(1).maybeSingle()
         if (enr) {
           setStatus('done')
           setTimeout(() => router.push('/dashboard'), 1200)
@@ -55,7 +51,21 @@ export function CheckoutSuccess({ sessionId }: { sessionId: string }) {
       }
       setTimeout(poll, 1500)
     }
-    poll()
+
+    // Backup fulfillment in case the webhook is delayed; also tells us which
+    // course was purchased so the poll can be scoped to it.
+    fetch('/api/stripe/confirm', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ sessionId }),
+    })
+      .then((r) => r.json())
+      .then((d) => {
+        courseId = d?.courseId ?? null
+      })
+      .catch(() => {})
+      .finally(() => poll())
+
     return () => {
       cancelled = true
     }

@@ -36,8 +36,10 @@ export async function fulfillCheckoutSession(sessionId: string) {
     .eq('id', courseId)
     .single()
 
-  // 3. Create the order.
-  const { data: order } = await supabase
+  // 3. Create the order. The stripe_session_id UNIQUE constraint is the real
+  //    idempotency guard against the webhook/confirm race: if a concurrent call
+  //    already inserted this session, we get a 23505 and treat it as done.
+  const { data: order, error: orderErr } = await supabase
     .from('orders')
     .insert({
       user_id: userId,
@@ -57,6 +59,11 @@ export async function fulfillCheckoutSession(sessionId: string) {
     })
     .select()
     .single()
+  if (orderErr) {
+    if (orderErr.code === '23505') return // already fulfilled by the other path
+    console.error('[fulfill] order insert failed:', orderErr)
+    return
+  }
   if (!order) return
 
   // 4. Create the enrollment (idempotent — unique(user_id, course_id)).
@@ -89,10 +96,14 @@ export async function fulfillCheckoutSession(sessionId: string) {
     console.error('[fulfill] email send failed:', err)
   }
 
-  await supabase.from('analytics_events').insert({
-    event_type: 'purchase',
-    user_id: userId,
-    course_id: courseId,
-    metadata: { amount_cents: session.amount_total },
-  })
+  try {
+    await supabase.from('analytics_events').insert({
+      event_type: 'purchase',
+      user_id: userId,
+      course_id: courseId,
+      metadata: { amount_cents: session.amount_total },
+    })
+  } catch (err) {
+    console.error('[fulfill] analytics insert failed:', err)
+  }
 }
