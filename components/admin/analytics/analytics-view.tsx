@@ -64,7 +64,7 @@ export function AnalyticsView({
   mediums: { name: string; value: number }[]
   sourceRows: { name: string; visits: number; pct: number }[]
   funnel: { label: string; value: number }[]
-  topPages: { url: string; views: number }[]
+  topPages: { url: string; views: number; uniques: number; pct: number }[]
   courseActivity: { title: string; done: number }[]
   weeks: { label: string; value: number }[]
 }) {
@@ -289,6 +289,7 @@ export function AnalyticsView({
           <div className="table-wrap">
             <div className="card-head">
               <h3>Топ страниц</h3>
+              <span className="ch-sub">какие страницы смотрят</span>
             </div>
             {topPages.length === 0 ? (
               <NoData />
@@ -298,6 +299,8 @@ export function AnalyticsView({
                   <tr>
                     <th>URL</th>
                     <th>Просмотры</th>
+                    <th>Уникальные</th>
+                    <th>% от всех</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -305,6 +308,8 @@ export function AnalyticsView({
                     <tr key={p.url}>
                       <td style={{ fontFamily: 'var(--mono)', fontSize: 12 }}>{p.url}</td>
                       <td className="cell-strong">{p.views.toLocaleString('ru-RU')}</td>
+                      <td className="tnum">{p.uniques.toLocaleString('ru-RU')}</td>
+                      <td className="cell-muted">{p.pct.toFixed(1)}%</td>
                     </tr>
                   ))}
                 </tbody>

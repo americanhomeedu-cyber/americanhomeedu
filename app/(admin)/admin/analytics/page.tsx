@@ -145,16 +145,26 @@ export default async function AnalyticsPage({
     { label: 'Куплено', value: purchases },
   ]
 
-  // ---- top pages ----
-  const pageMap = new Map<string, number>()
+  // ---- top pages (views, unique sessions, % of all views) ----
+  const pageViewsMap = new Map<string, number>()
+  const pageSessMap = new Map<string, Set<string>>()
   pv.forEach((e) => {
     const u = e.page_url || '/'
-    pageMap.set(u, (pageMap.get(u) || 0) + 1)
+    pageViewsMap.set(u, (pageViewsMap.get(u) || 0) + 1)
+    if (e.session_id) {
+      if (!pageSessMap.has(u)) pageSessMap.set(u, new Set())
+      pageSessMap.get(u)!.add(e.session_id)
+    }
   })
-  const topPages = Array.from(pageMap.entries())
+  const topPages = Array.from(pageViewsMap.entries())
     .sort((a, b) => b[1] - a[1])
-    .slice(0, 8)
-    .map(([url, views]) => ({ url, views }))
+    .slice(0, 15)
+    .map(([url, views]) => ({
+      url,
+      views,
+      uniques: pageSessMap.get(url)?.size ?? 0,
+      pct: pv.length ? (views / pv.length) * 100 : 0,
+    }))
 
   // ---- course content activity (completed per section) ----
   const doneBySection = new Map<string, number>()
