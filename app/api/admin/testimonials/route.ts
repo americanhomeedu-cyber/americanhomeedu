@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { revalidatePath } from 'next/cache'
 import { requireAdmin } from '@/lib/auth/require-admin'
 
 const create = z.object({
@@ -34,5 +35,6 @@ export async function POST(req: Request) {
     .select('id')
     .single()
   if (error) return Response.json({ error: error.message }, { status: 400 })
+  revalidatePath('/', 'layout')
   return Response.json({ id: data.id })
 }

@@ -1,3 +1,4 @@
+import { revalidatePath } from 'next/cache'
 import { requireAdmin } from '@/lib/auth/require-admin'
 import { updateCourseSchema } from '@/lib/validations/course'
 
@@ -28,6 +29,8 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
       : error.message
     return Response.json({ error: msg }, { status: 400 })
   }
+  // Reflect price/title/featured changes on the (ISR-cached) landing immediately.
+  revalidatePath('/', 'layout')
   return Response.json({ ok: true })
 }
 
@@ -42,5 +45,6 @@ export async function DELETE(req: Request, { params }: { params: { id: string } 
       { status: 400 },
     )
   }
+  revalidatePath('/', 'layout')
   return Response.json({ ok: true })
 }

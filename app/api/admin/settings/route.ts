@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { revalidatePath } from 'next/cache'
 import { requireAdmin } from '@/lib/auth/require-admin'
 
 const Schema = z.object({
@@ -19,5 +20,7 @@ export async function PATCH(req: Request) {
     .from('site_settings')
     .upsert({ key: b.key, value: b.value }, { onConflict: 'key' })
   if (error) return Response.json({ error: error.message }, { status: 400 })
+  // Settings feed the landing (hero/footer/SEO) and the legal pages — refresh them.
+  revalidatePath('/', 'layout')
   return Response.json({ ok: true })
 }
