@@ -40,6 +40,7 @@ export async function generateMetadata(): Promise<Metadata> {
     ? settings.seo_title_template.replace('%s', course.title)
     : `${course.title} — ${settings.site_title}`
   const description = settings.seo_description || course.subtitle || course.description || undefined
+  const ogImage = course.cover_image_url || '/images/alla-banner.jpg'
   return {
     title,
     description,
@@ -47,7 +48,13 @@ export async function generateMetadata(): Promise<Metadata> {
       title: course.title,
       description,
       type: 'website',
-      images: course.cover_image_url ? [{ url: course.cover_image_url }] : [],
+      images: [{ url: ogImage }],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: course.title,
+      description,
+      images: [ogImage],
     },
   }
 }

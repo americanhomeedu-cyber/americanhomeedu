@@ -72,7 +72,12 @@ export function RegisterForm() {
     })
     setSubmitting(false)
     if (error) {
-      setServerError(error.message)
+      const code = (error as { code?: string }).code
+      if (code === 'user_already_exists' || /already.*regist/i.test(error.message)) {
+        setServerError('Этот email уже зарегистрирован. Войдите или восстановите пароль на странице входа.')
+      } else {
+        setServerError(error.message)
+      }
       return
     }
     setEmail(parsed.data.email)

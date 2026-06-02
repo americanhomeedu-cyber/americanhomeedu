@@ -19,3 +19,12 @@ export function formatPrice(cents: number, currency = 'usd') {
 export function siteUrl() {
   return process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000'
 }
+
+/**
+ * Guard against open redirects — only same-origin relative paths are allowed.
+ * Rejects absolute URLs and protocol-relative (`//evil.com`, `/\evil.com`).
+ */
+export function safePath(p: string | undefined | null, fallback = '/dashboard') {
+  if (p && p.startsWith('/') && !p.startsWith('//') && !p.startsWith('/\\')) return p
+  return fallback
+}

@@ -42,7 +42,7 @@ export type ResetInput = z.infer<typeof resetSchema>
 export const otpSchema = z.object({
   code: z
     .string()
-    .length(6, 'Код состоит из 6 цифр')
+    .length(8, 'Код состоит из 8 цифр')
     .regex(/^\d+$/, 'Только цифры'),
 })
 export type OtpInput = z.infer<typeof otpSchema>

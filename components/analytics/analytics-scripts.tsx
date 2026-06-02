@@ -1,19 +1,42 @@
 'use client'
 
+import * as React from 'react'
 import Script from 'next/script'
 
+/**
+ * GA4 + Meta Pixel — loaded ONLY after the visitor accepts cookies (consent
+ * stored by the cookie banner). Re-checks on the `ahb-consent` event so they
+ * mount immediately when the user clicks «Принять».
+ */
 export function AnalyticsScripts() {
   const ga = process.env.NEXT_PUBLIC_GA_ID
   const pixel = process.env.NEXT_PUBLIC_META_PIXEL_ID
+  const [consented, setConsented] = React.useState(false)
+
+  React.useEffect(() => {
+    const check = () => {
+      try {
+        setConsented(localStorage.getItem('ahb_cookie_consent') === 'accepted')
+      } catch {
+        setConsented(false)
+      }
+    }
+    check()
+    window.addEventListener('ahb-consent', check)
+    window.addEventListener('storage', check)
+    return () => {
+      window.removeEventListener('ahb-consent', check)
+      window.removeEventListener('storage', check)
+    }
+  }, [])
+
+  if (!consented) return null
 
   return (
     <>
       {ga && (
         <>
-          <Script
-            src={`https://www.googletagmanager.com/gtag/js?id=${ga}`}
-            strategy="afterInteractive"
-          />
+          <Script src={`https://www.googletagmanager.com/gtag/js?id=${ga}`} strategy="afterInteractive" />
           <Script id="ga4" strategy="afterInteractive">
             {`window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','${ga}');`}
           </Script>

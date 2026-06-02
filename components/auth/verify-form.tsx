@@ -53,6 +53,21 @@ export function VerifyForm({ email }: { email: string }) {
     setCooldown(AUTH.resendCodeCooldownSeconds)
   }
 
+  if (!email) {
+    return (
+      <div className="confirm">
+        <div className="cf-ic">
+          <Mail size={34} />
+        </div>
+        <h2>Подтверждение email</h2>
+        <p>Не удалось определить адрес. Войдите снова — при необходимости мы отправим код.</p>
+        <Button asChild variant="green" size="lg" className="mt-5 w-full">
+          <Link href="/login">Ко входу</Link>
+        </Button>
+      </div>
+    )
+  }
+
   return (
     <div className="confirm">
       <div className="cf-ic">

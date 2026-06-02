@@ -7,10 +7,17 @@ import { AlertCircle, Info, Mail } from 'lucide-react'
 import { toast } from 'sonner'
 import { loginSchema } from '@/lib/validations/auth'
 import { createClient } from '@/lib/supabase/client'
+import { safePath } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { AuthField, PasswordField } from './fields'
 
-export function LoginForm({ redirect }: { redirect?: string }) {
+export function LoginForm({
+  redirect,
+  callbackError,
+}: {
+  redirect?: string
+  callbackError?: boolean
+}) {
   const router = useRouter()
   const supabase = React.useMemo(() => createClient(), [])
   const [serverError, setServerError] = React.useState('')
@@ -52,7 +59,8 @@ export function LoginForm({ redirect }: { redirect?: string }) {
     })
     if (error) {
       setLoading(false)
-      if (/confirm/i.test(error.message)) {
+      // Use the stable machine code (locale-independent), with a message fallback.
+      if ((error as { code?: string }).code === 'email_not_confirmed' || /confirm/i.test(error.message)) {
         setNeedsConfirm(true)
         return
       }
@@ -67,7 +75,7 @@ export function LoginForm({ redirect }: { redirect?: string }) {
 
     // An explicit redirect (e.g. user was bounced from a protected page) wins.
     // Otherwise route by role: admins land in the panel, students in dashboard.
-    let target = redirect
+    let target = redirect ? safePath(redirect) : ''
     if (!target) {
       const { data: profile } = await supabase
         .from('profiles')
@@ -94,6 +102,17 @@ export function LoginForm({ redirect }: { redirect?: string }) {
         <h1>С возвращением</h1>
         <p>Войдите, чтобы продолжить обучение</p>
       </div>
+      {callbackError && (
+        <div className="alert info">
+          <Info size={17} />
+          <div>
+            Ссылка устарела или недействительна.{' '}
+            <Link href="/forgot-password" style={{ fontWeight: 700, textDecoration: 'underline' }}>
+              Запросить новую
+            </Link>
+          </div>
+        </div>
+      )}
       {serverError && (
         <div className="alert error">
           <AlertCircle size={17} />

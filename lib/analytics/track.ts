@@ -47,9 +47,18 @@ export function track(
       keepalive: true,
     }).catch(() => {})
 
-    const w = window as Trackable
-    if (w.gtag) w.gtag('event', eventType, data?.metadata || {})
-    if (w.fbq) w.fbq('trackCustom', eventType, data?.metadata || {})
+    // Only forward to third parties (Google / Meta) after cookie consent.
+    let consented = false
+    try {
+      consented = localStorage.getItem('ahb_cookie_consent') === 'accepted'
+    } catch {
+      /* ignore */
+    }
+    if (consented) {
+      const w = window as Trackable
+      if (w.gtag) w.gtag('event', eventType, data?.metadata || {})
+      if (w.fbq) w.fbq('trackCustom', eventType, data?.metadata || {})
+    }
   } catch {
     /* never let tracking break the UI */
   }

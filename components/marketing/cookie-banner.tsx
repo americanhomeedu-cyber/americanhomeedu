@@ -23,6 +23,12 @@ export function CookieBanner({ enabled, text }: { enabled: boolean; text: string
     } catch {
       /* ignore */
     }
+    // Let the analytics scripts mount immediately on accept.
+    try {
+      window.dispatchEvent(new Event('ahb-consent'))
+    } catch {
+      /* ignore */
+    }
     setShow(false)
   }
 

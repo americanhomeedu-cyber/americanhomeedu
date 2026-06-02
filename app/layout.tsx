@@ -38,6 +38,8 @@ export const metadata: Metadata = {
   metadataBase: new URL(
     process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000',
   ),
+  openGraph: { type: 'website', images: ['/images/alla-banner.jpg'] },
+  twitter: { card: 'summary_large_image', images: ['/images/alla-banner.jpg'] },
 }
 
 export default function RootLayout({
