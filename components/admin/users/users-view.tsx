@@ -2,24 +2,13 @@
 
 import * as React from 'react'
 import { useRouter } from 'next/navigation'
-import {
-  Download,
-  Search,
-  Plus,
-  X,
-  MoreHorizontal,
-  Eye,
-  KeyRound,
-  Shield,
-  Trash2,
-  UserPlus,
-  RefreshCw,
-} from 'lucide-react'
+import { Download, Search, Plus, X, Eye, KeyRound, Shield, Trash2, UserPlus, RefreshCw } from 'lucide-react'
 import { toast } from 'sonner'
 import { format } from 'date-fns'
 import { ru } from 'date-fns/locale'
 import { PageHeader } from '@/components/admin/page-header'
 import { AdminModal } from '@/components/admin/modal'
+import { RowMenu } from '@/components/admin/row-menu'
 import { formatPrice } from '@/lib/utils'
 
 type Enr = { courseId: string; title: string }
@@ -75,7 +64,6 @@ export function UsersView({ users, courses }: { users: User[]; courses: Course[]
   const [page, setPage] = React.useState(1)
   const [per, setPer] = React.useState(20)
   const [selected, setSelected] = React.useState<Set<string>>(new Set())
-  const [openMenu, setOpenMenu] = React.useState<string | null>(null)
   const [busy, setBusy] = React.useState(false)
 
   // modals
@@ -86,12 +74,6 @@ export function UsersView({ users, courses }: { users: User[]; courses: Course[]
   const [pw, setPw] = React.useState('')
 
   React.useEffect(() => setPage(1), [search, access, role, courseFilter, per])
-  React.useEffect(() => {
-    if (!openMenu) return
-    const close = () => setOpenMenu(null)
-    document.addEventListener('click', close)
-    return () => document.removeEventListener('click', close)
-  }, [openMenu])
 
   const filtersActive = access !== 'all' || role !== 'all' || courseFilter !== 'all' || !!search
 
@@ -414,41 +396,17 @@ export function UsersView({ users, courses }: { users: User[]; courses: Course[]
                   <td className="cell-muted">{format(new Date(u.created_at), 'd MMM yyyy', { locale: ru })}</td>
                   <td className="cell-muted">{timeAgo(u.last_login_at)}</td>
                   <td onClick={(e) => e.stopPropagation()}>
-                    <div className={`dd${openMenu === u.id ? ' open' : ''}`}>
-                      <button
-                        className="btn btn-ghost btn-icon btn-sm"
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          setOpenMenu(openMenu === u.id ? null : u.id)
-                        }}
-                      >
-                        <MoreHorizontal size={16} />
-                      </button>
-                      <div className="dd-menu">
-                        <button className="dd-item" onClick={() => router.push(`/admin/users/${u.id}`)}>
-                          <Eye size={15} />
-                          Профиль
-                        </button>
-                        <button className="dd-item" onClick={() => { setGrantFor(u); setGrantCourse(courses[0]?.id || '') }}>
-                          <Plus size={15} />
-                          Дать доступ
-                        </button>
-                        <button className="dd-item" onClick={() => { setPwFor(u); setPw(genPassword()) }}>
-                          <KeyRound size={15} />
-                          Сменить пароль
-                        </button>
-                        <div className="dd-sep" />
-                        <button className="dd-item" onClick={() => setRoleFor(u, u.role === 'admin' ? 'student' : 'admin')}>
-                          <Shield size={15} />
-                          {u.role === 'admin' ? 'Убрать из админов' : 'Сделать админом'}
-                        </button>
-                        <div className="dd-sep" />
-                        <button className="dd-item danger" onClick={() => deleteUser(u)}>
-                          <Trash2 size={15} />
-                          Удалить
-                        </button>
-                      </div>
-                    </div>
+                    <RowMenu
+                      items={[
+                        { label: 'Профиль', icon: Eye, onClick: () => router.push(`/admin/users/${u.id}`) },
+                        { label: 'Дать доступ', icon: Plus, onClick: () => { setGrantFor(u); setGrantCourse(courses[0]?.id || '') } },
+                        { label: 'Сменить пароль', icon: KeyRound, onClick: () => { setPwFor(u); setPw(genPassword()) } },
+                        { sep: true },
+                        { label: u.role === 'admin' ? 'Убрать из админов' : 'Сделать админом', icon: Shield, onClick: () => setRoleFor(u, u.role === 'admin' ? 'student' : 'admin') },
+                        { sep: true },
+                        { label: 'Удалить', icon: Trash2, danger: true, onClick: () => deleteUser(u) },
+                      ]}
+                    />
                   </td>
                 </tr>
               ))

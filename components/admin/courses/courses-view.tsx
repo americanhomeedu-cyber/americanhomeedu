@@ -2,19 +2,8 @@
 
 import * as React from 'react'
 import { useRouter } from 'next/navigation'
-import {
-  Plus,
-  MoreHorizontal,
-  Settings,
-  BookOpen,
-  Star,
-  StarOff,
-  Copy,
-  Trash2,
-  DollarSign,
-  Users,
-  GripVertical,
-} from 'lucide-react'
+import { Plus, Settings, BookOpen, Star, StarOff, Copy, Trash2, DollarSign, Users, GripVertical } from 'lucide-react'
+import { RowMenu } from '@/components/admin/row-menu'
 import { toast } from 'sonner'
 import {
   DndContext,
@@ -46,21 +35,9 @@ type Row = {
 
 function CourseRow({ c }: { c: Row }) {
   const router = useRouter()
-  const [open, setOpen] = React.useState(false)
-  const ref = React.useRef<HTMLDivElement>(null)
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: c.id })
 
-  React.useEffect(() => {
-    if (!open) return
-    const h = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
-    }
-    document.addEventListener('mousedown', h)
-    return () => document.removeEventListener('mousedown', h)
-  }, [open])
-
   async function patch(body: Record<string, unknown>, okMsg: string) {
-    setOpen(false)
     const res = await fetch(`/api/admin/courses/${c.id}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
@@ -75,7 +52,6 @@ function CourseRow({ c }: { c: Row }) {
   }
 
   async function duplicate() {
-    setOpen(false)
     const rand = Math.random().toString(36).slice(2, 6)
     const res = await fetch('/api/admin/courses', {
       method: 'POST',
@@ -96,7 +72,6 @@ function CourseRow({ c }: { c: Row }) {
   }
 
   async function del() {
-    setOpen(false)
     if (!confirm(`Удалить курс «${c.title}»?`)) return
     const res = await fetch(`/api/admin/courses/${c.id}`, { method: 'DELETE' })
     const d = await res.json()
@@ -148,41 +123,18 @@ function CourseRow({ c }: { c: Row }) {
         </div>
       </td>
       <td onClick={(e) => e.stopPropagation()}>
-        <div className={`dd${open ? ' open' : ''}`} ref={ref}>
-          <button className="btn btn-ghost btn-icon btn-sm" onClick={() => setOpen((o) => !o)} aria-label="Действия">
-            <MoreHorizontal size={16} />
-          </button>
-          <div className="dd-menu">
-            <button className="dd-item" onClick={() => router.push(`/admin/courses/${c.id}/settings`)}>
-              <Settings size={15} />
-              Настройки
-            </button>
-            <button className="dd-item" onClick={() => router.push(`/admin/courses/${c.id}/editor`)}>
-              <BookOpen size={15} />
-              Редактор
-            </button>
-            <button className="dd-item" onClick={duplicate}>
-              <Copy size={15} />
-              Дублировать
-            </button>
-            {c.is_featured ? (
-              <button className="dd-item" onClick={() => patch({ is_featured: false }, 'Снят с featured')}>
-                <StarOff size={15} />
-                Снять featured
-              </button>
-            ) : (
-              <button className="dd-item" onClick={() => patch({ is_featured: true }, 'Курс назначен featured')}>
-                <Star size={15} />
-                Сделать featured
-              </button>
-            )}
-            <div className="dd-sep" />
-            <button className="dd-item danger" onClick={del}>
-              <Trash2 size={15} />
-              Удалить
-            </button>
-          </div>
-        </div>
+        <RowMenu
+          items={[
+            { label: 'Настройки', icon: Settings, onClick: () => router.push(`/admin/courses/${c.id}/settings`) },
+            { label: 'Редактор', icon: BookOpen, onClick: () => router.push(`/admin/courses/${c.id}/editor`) },
+            { label: 'Дублировать', icon: Copy, onClick: duplicate },
+            c.is_featured
+              ? { label: 'Снять featured', icon: StarOff, onClick: () => patch({ is_featured: false }, 'Снят с featured') }
+              : { label: 'Сделать featured', icon: Star, onClick: () => patch({ is_featured: true }, 'Курс назначен featured') },
+            { sep: true },
+            { label: 'Удалить', icon: Trash2, danger: true, onClick: del },
+          ]}
+        />
       </td>
     </tr>
   )

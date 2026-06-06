@@ -28,7 +28,6 @@ import {
   Eye,
   Check,
   Pencil,
-  MoreHorizontal,
   Pause,
   Search,
   Heading,
@@ -47,6 +46,7 @@ import type { LucideIcon } from 'lucide-react'
 import { BlockEditor } from './block-editor'
 import { AdminModal } from '@/components/admin/modal'
 import { Sheet } from '@/components/admin/sheet'
+import { RowMenu } from '@/components/admin/row-menu'
 import type { Block, BlockType } from '@/types/blocks'
 
 type Section = {
@@ -106,8 +106,6 @@ function SectionRow({
   index,
   active,
   onSelect,
-  menuOpen,
-  onMenuToggle,
   onRename,
   onDup,
   onPub,
@@ -117,8 +115,6 @@ function SectionRow({
   index: number
   active: boolean
   onSelect: () => void
-  menuOpen: boolean
-  onMenuToggle: (e: React.MouseEvent) => void
   onRename: () => void
   onDup: () => void
   onPub: () => void
@@ -140,29 +136,20 @@ function SectionRow({
           </div>
         </div>
         <span className="cs-dot" style={{ background: section.is_published ? 'var(--success)' : 'var(--ink-3)' }} />
-        <div className={`dd${menuOpen ? ' open' : ''}`} onClick={(e) => e.stopPropagation()}>
-          <button className="btn btn-ghost btn-icon btn-sm" onClick={onMenuToggle}>
-            <MoreHorizontal size={15} />
-          </button>
-          <div className="dd-menu">
-            <button className="dd-item" onClick={onRename}>
-              <Pencil size={15} />
-              Переименовать
-            </button>
-            <button className="dd-item" onClick={onDup}>
-              <Copy size={15} />
-              Дублировать
-            </button>
-            <button className="dd-item" onClick={onPub}>
-              {section.is_published ? <Pause size={15} /> : <Check size={15} />}
-              {section.is_published ? 'Скрыть' : 'Опубликовать'}
-            </button>
-            <div className="dd-sep" />
-            <button className="dd-item danger" onClick={onDelete}>
-              <Trash2 size={15} />
-              Удалить
-            </button>
-          </div>
+        <div onClick={(e) => e.stopPropagation()}>
+          <RowMenu
+            items={[
+              { label: 'Переименовать', icon: Pencil, onClick: onRename },
+              { label: 'Дублировать', icon: Copy, onClick: onDup },
+              {
+                label: section.is_published ? 'Скрыть' : 'Опубликовать',
+                icon: section.is_published ? Pause : Check,
+                onClick: onPub,
+              },
+              { sep: true },
+              { label: 'Удалить', icon: Trash2, danger: true, onClick: onDelete },
+            ]}
+          />
         </div>
       </div>
     </div>
@@ -313,7 +300,6 @@ export function CourseEditor({
   const [activeId, setActiveId] = React.useState<string>(initialSections[0]?.id ?? '')
   const [saveState, setSaveState] = React.useState<'saved' | 'saving' | 'unsaved'>('saved')
   const [addPos, setAddPos] = React.useState<number | null>(null)
-  const [menuSec, setMenuSec] = React.useState<string | null>(null)
   const [renameSec, setRenameSec] = React.useState<Section | null>(null)
   const [renameVal, setRenameVal] = React.useState('')
   const [previewOpen, setPreviewOpen] = React.useState(false)
@@ -327,13 +313,6 @@ export function CourseEditor({
 
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }))
   const active = sections.find((s) => s.id === activeId)
-
-  React.useEffect(() => {
-    if (!menuSec) return
-    const close = () => setMenuSec(null)
-    document.addEventListener('click', close)
-    return () => document.removeEventListener('click', close)
-  }, [menuSec])
 
   const flush = React.useCallback(async () => {
     const ids = Array.from(dirty.current)
@@ -511,28 +490,13 @@ export function CourseEditor({
                   index={i}
                   active={s.id === activeId}
                   onSelect={() => setActiveId(s.id)}
-                  menuOpen={menuSec === s.id}
-                  onMenuToggle={(e) => {
-                    e.stopPropagation()
-                    setMenuSec(menuSec === s.id ? null : s.id)
-                  }}
                   onRename={() => {
-                    setMenuSec(null)
                     setRenameSec(s)
                     setRenameVal(s.title)
                   }}
-                  onDup={() => {
-                    setMenuSec(null)
-                    duplicateSection(s)
-                  }}
-                  onPub={() => {
-                    setMenuSec(null)
-                    patchSection(s.id, { is_published: !s.is_published })
-                  }}
-                  onDelete={() => {
-                    setMenuSec(null)
-                    deleteSection(s.id)
-                  }}
+                  onDup={() => duplicateSection(s)}
+                  onPub={() => patchSection(s.id, { is_published: !s.is_published })}
+                  onDelete={() => deleteSection(s.id)}
                 />
               ))}
             </SortableContext>
